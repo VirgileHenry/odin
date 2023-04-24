@@ -1,0 +1,62 @@
+/*
+Let's try to properly write a formal grammar for Magic : the Gathering cards.
+
+First, let's get a few texts and see how to build tokens.
+
+"Flying
+Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)
+When ~ dies, put a +1/+1 counter on each white creature you control."
+
+"Whenever ~ attacks or becomes the target of a spell an opponent controls, choose one —
+• ~ deals 3 damage to each opponent.
+• Exile the top two cards of your library. Choose one of them. Until the end of your next turn, you may play that card."
+
+"{T} : Add {C}{C}."
+
+I'm still thinking on how I'm trying to represent spaces.
+*/
+
+I'm going to try to write a grammar, with TEXT as the source.
+
+// first, let's get to the main type of abilities
+
+TEXT: ABILITIES end_of_input | eps
+ABILITIES: ABILITY | ABILITY new_line ABILITIES
+ABILITY: TRIGGERED_AB | ACTIVATED_AB | STATIC_AB | SPELL_AB
+
+// then, each type of ab can be split and read in it's own way.
+
+TRIGGERED_AB: TRIGGER_COND , STATEMENT
+ACTIVATED_AB: COST : STATEMENT
+SPELL_AB: STATEMENT
+STATIC_AB: STATEMENT
+
+// let's go over the few things we created then
+
+TRIGGER_COND: when OBJECT_REFERENCE ACTION
+
+ACTION: dies | attacks
+
+STATEMENT: IMPERATIVE
+
+IMPERATIVE: 
+put NUMBER COUNTER on OBJECT_REFERENCE .
+
+NUMBER a | 0..+INFINITY
+COUNT_SPECIFIER: each | up to NUMBER target | target
+OBJECT_REFERENCE: ~ | COUNT_SPECIFIER SPECIFIED_OBJECT
+SPECIFIED_OBJECT: OBJECT | OBJ_PREFIX_SPECIFIER SPECIFIED_OBJECT | SPECIFIED_OBJECT OBJ_SUFFIX_SPECIFIER
+
+COUNTER: +1/+1 counter
+OBJECT: creature
+
+OBJ_PREFIX_SPECIFIER: COLOR_SPECIFIER
+OBJ_SUFFIX_SPECIFIER: CONTROL_SPECIFIER
+
+COLOR_SPECIFIER: white | red | green | blue | black
+CONTROL_SPECIFIER: you control | you don't control
+
+
+
+
+

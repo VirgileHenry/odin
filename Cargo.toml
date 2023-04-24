@@ -1,0 +1,13 @@
+[package]
+name = "odin"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mtg-data = { path = "deps/mtg-data"}
+strum = "0.24"
+strum_macros = "0.24"
+lazy_static = "1.4.0"
+regex = "1.7.3"
