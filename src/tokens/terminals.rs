@@ -1,6 +1,6 @@
 use std::{fmt::{Display}, str::FromStr};
 
-use mtg_data::{MtgColor, AbilityKeyword};
+use mtg_data::{MtgColor, AbilityKeyword, ManaCost};
 use self::{
     actions::Actions,
     control_flow::ControlFlow,
@@ -8,33 +8,36 @@ use self::{
     numbers::Number,
     specifiers::{
         control::ControlSpecifier,
-        count::CountSpecifier,
+        count::CountSpecifier, appartenace::AppartenanceSpecifier,
     },
     objects::Object,
     trigger_condition::TriggerConditionKW,
-    imperatives::ImperativeKW,
+    imperatives::ImperativeKW, zone::Zone,
 };
 
 /// An enum for all terminal nodes of our grammar. Also referenced as a token for lexing.
 /// We wrap them up in categories to easy a little parsing and recognition.
 /// Technically, these are non terminal that all gives the terminals they hold.
 /// Therfore, some of them have a non terminal equivalent.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Terminal {
+    AppartenanceSpecifier(AppartenanceSpecifier),
     ColorSpecifier(MtgColor),
     ControlFlow(ControlFlow),
     ControlSpecifier(ControlSpecifier),
     Counter(Counter),
     CountSpecifier(CountSpecifier),
     EndOfInput,
-    Epsilon, // used for parsing, but never constructed from lexing.
     ImperativeKW(ImperativeKW),
     Keyword(AbilityKeyword),
+    ManaCost(ManaCost),
     Number(Number),
     Object(Object),
     SelfReferencing,
+    TapCost,
     TerminalAction(Actions),
     TriggerCondKW(TriggerConditionKW),
+    Zone(Zone),
 }
 
 impl Display for Terminal {
@@ -48,6 +51,10 @@ impl FromStr for Terminal {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // try each variant from string.
         // feel like this could be written in a derive macro, but it's lot of work. for this only use case.
+        match AppartenanceSpecifier::from_str(s) {
+            Ok(sp) => return Ok(Terminal::AppartenanceSpecifier(sp)),
+            Err(_) => {},
+        }
         match ControlFlow::from_str(s) {
             Ok(cf) => return Ok(Terminal::ControlFlow(cf)),
             Err(_) => {},
@@ -88,8 +95,13 @@ impl FromStr for Terminal {
             Ok(cond) => return Ok(Terminal::TriggerCondKW(cond)),
             Err(_) => {},
         }
+
         match ImperativeKW::from_str(s) {
             Ok(imperative) => return Ok(Terminal::ImperativeKW(imperative)),
+            Err(_) => {},
+        }
+        match Zone::from_str(s) {
+            Ok(zone) => return Ok(Terminal::Zone(zone)),
             Err(_) => {},
         }
 
@@ -113,3 +125,4 @@ pub mod numbers;
 pub mod objects;
 pub mod specifiers;
 pub mod trigger_condition;
+pub mod zone;

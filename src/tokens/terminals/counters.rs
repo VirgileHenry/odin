@@ -5,7 +5,7 @@ use crate::ability_display::AbilityDisplay;
 /// Terminal keywords that represents counters.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[derive(EnumString, EnumIter)]
-#[strum(serialize_all = "snake_case")]
+#[strum(ascii_case_insensitive)]
 pub enum Counter {
     #[strum(serialize = "+1/+1 counter")]
     PlusOne,

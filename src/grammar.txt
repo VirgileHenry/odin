@@ -1,62 +1,132 @@
-/*
-Let's try to properly write a formal grammar for Magic : the Gathering cards.
+/// Grammar for Magic: the gathering.
+/// termials are written in min "card".
+/// non terminals are written in maj, "OBJECT".
+/// rules are given by NON_TERMINAL: \n rule1 \n rule2,
+/// with rules being NON_TERM term NONE_TERM_2.
+/// terminals are grouped up under a single non term that define them. This help the rust impl.
+/// non terminals are also under enums, 
+/// terminals may have their actual syntax written in parenthesis.
+/// non-terminal 'TEXT' is the entry point.
 
-First, let's get a few texts and see how to build tokens.
+TEXT:
+	end of input ($)
+	ABILITIES
 
-"Flying
-Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)
-When ~ dies, put a +1/+1 counter on each white creature you control."
+ABILITIES:
+	ABILITY
+	ABILITY new line (\n) ABILITIES
 
-"Whenever ~ attacks or becomes the target of a spell an opponent controls, choose one —
-• ~ deals 3 damage to each opponent.
-• Exile the top two cards of your library. Choose one of them. Until the end of your next turn, you may play that card."
+ABILITY:
+	TRIGGERED_ABILITY
+	STATIC_ABILITY
+	ACTIVATED_ABILITY
+	SPELL_ABILITY
 
-"{T} : Add {C}{C}."
+TRIGGERED_ABILITY:
+	TRIGGER_CONDITION comma (,) STATEMENT
 
-I'm still thinking on how I'm trying to represent spaces.
-*/
+SPELL_ABILITY:
+	STATEMENT
 
-I'm going to try to write a grammar, with TEXT as the source.
+ACTIVATED_ABILITY:
+	COSTS colons (:) STATEMENT
 
-// first, let's get to the main type of abilities
+COSTS:
+	COST
+	COST coma (,) COSTS
 
-TEXT: ABILITIES end_of_input | eps
-ABILITIES: ABILITY | ABILITY new_line ABILITIES
-ABILITY: TRIGGERED_AB | ACTIVATED_AB | STATIC_AB | SPELL_AB
+COST:
+	MANA_COST
+	IMPERATIVE // can imperatives be costs ? "sacrifice a creature: [....]"
 
-// then, each type of ab can be split and read in it's own way.
+TRIGGER_CONDITION:
+	when OBJECT_REFERENCE ACTION
 
-TRIGGERED_AB: TRIGGER_COND , STATEMENT
-ACTIVATED_AB: COST : STATEMENT
-SPELL_AB: STATEMENT
-STATIC_AB: STATEMENT
+STATEMENT:
+	IMPERATIVE
 
-// let's go over the few things we created then
+IMPERATIVE:
+	put NUMBER COUNTER on OBJECT_REFERENCE dot (.)
+	return OBJECT_REFERENCE from ZONE_REFERENCE to ZONE_REFERENCE dot (.)
+	OBJECT_REFERENCE deals NUMBER damage to OBJECT_REFERENCE dot (.)
 
-TRIGGER_COND: when OBJECT_REFERENCE ACTION
+OBJECT_REFERENCE:
+	COUNT_SPECIFIER SPECIFIED_OBJECT
+	self reference (~)
 
-ACTION: dies | attacks
+SPECIFIED_OBJECT:
+	OBJECT
+	OBJECT OBJECT // little hack to allow objects to be prefix specifiers, like "permanent card"
+	OBJ_PREFIX_SPECIFIER SPECIFIED_OBJECT
+	SPECIFIED_OBJECT OBJ_SUFFIX_SPECIFIER
 
-STATEMENT: IMPERATIVE
+OBJ_PREFIX_SPECIFIER:
+	COLOR_SPECIFIER
 
-IMPERATIVE: 
-put NUMBER COUNTER on OBJECT_REFERENCE .
+OBJ_SUFFIX_SPECIFIER:
+	CONTROL_SPECIFIER
 
-NUMBER a | 0..+INFINITY
-COUNT_SPECIFIER: each | up to NUMBER target | target
-OBJECT_REFERENCE: ~ | COUNT_SPECIFIER SPECIFIED_OBJECT
-SPECIFIED_OBJECT: OBJECT | OBJ_PREFIX_SPECIFIER SPECIFIED_OBJECT | SPECIFIED_OBJECT OBJ_SUFFIX_SPECIFIER
-
-COUNTER: +1/+1 counter
-OBJECT: creature
-
-OBJ_PREFIX_SPECIFIER: COLOR_SPECIFIER
-OBJ_SUFFIX_SPECIFIER: CONTROL_SPECIFIER
-
-COLOR_SPECIFIER: white | red | green | blue | black
-CONTROL_SPECIFIER: you control | you don't control
-
-
-
+ZONE_REFERENCE:
+	battlefield (the battlefield)
+	APPARTENANCE_SPECIFIER ZONE
 
 
+COLOR_SPECIFIER:
+	white
+	red
+	green
+	blue
+	black
+	colorless
+
+CONTROL_FLOW:
+	newline (\n)
+	comma (,)
+	dot (.)
+
+CONTROL_SPECIFIER:
+	you control
+	you don't control
+
+COUNTER:
+	+1/+1 counter
+
+COUNT_SPECIFIER:
+	each
+	target
+	up to
+
+IMPERATIVE_KW:
+	put,
+	on
+	return
+	from
+	to
+
+ABILITY_KEYWORD:
+	flying
+	mentor
+	rebound
+
+NUMBER:
+	a
+	number (0..999)
+
+OBJECT:
+	creature
+	card
+	permanent
+
+ACTIONS:
+	dies
+	attacks
+
+TRIGGER_CONDITION_KW:
+	when
+
+ZONE:
+	graveyard
+	the battlefield
+
+APPARTENANCE_SPECIFIER:
+	your

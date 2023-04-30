@@ -5,7 +5,7 @@ use crate::ability_display::AbilityDisplay;
 /// Terminal keyword that represent an action that can be done.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[derive(EnumString, EnumIter)]
-#[strum(serialize_all = "snake_case")]
+#[strum(ascii_case_insensitive)]
 pub enum Actions {
     Dies,
     Attacks,

@@ -37,6 +37,7 @@ impl From<AbilityKeyword> for Ability {
         match value {
             AbilityKeyword::Flying => Ability::Static(StaticAbility::CommonStaticAbility(value)),
             AbilityKeyword::Mentor => Ability::Triggered(TriggeredAbility::CommonTriggeredAbilities(value)),
+            AbilityKeyword::Rebound => Ability::Spell(SpellAbility::CommonSpellAbility(AbilityKeyword::Rebound)),
         }
     }
 }

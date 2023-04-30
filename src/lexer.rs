@@ -1,6 +1,8 @@
 use std::{collections::VecDeque, str::FromStr};
 
-use crate::tokens::terminals::Terminal;
+use mtg_data::ManaCost;
+
+use crate::tokens::terminals::{Terminal, numbers::Number};
 
 use self::error::OdinLexerError;
 
@@ -31,16 +33,9 @@ impl OdinLexer {
 
         // while there is remaining input, parse it up
         while !self.input.is_empty() {
-            match self.parse_token() {
-                Ok(option) => match option {
-                    Some(token) => result.push(token),
-                    None => {/* keep parsing */}
-                }
-                Err(_) => {
-                    // we failed finding a token from our position.
-                    // discard for now, but catch later on.
-                    // todo : handle this error
-                }
+            match self.parse_token()? {
+                Some(token) => result.push(token),
+                None => {/* keep parsing */},
             } 
         }
 
@@ -55,6 +50,24 @@ impl OdinLexer {
         // first, try to match single letter possibilities.
         // check flow control
         if c == ' ' { return Ok(None); } // space is a custom char, spacing tokens. If first char, remove it.
+
+        if c.is_digit(10) {
+            let num = self.try_number(c);
+            return Ok(Some(Terminal::Number(Number::Number(num))));
+        }
+
+        if c == '{' {
+            // let's read a cost thingy
+            let cost = self.get_braces_symbol()?.to_ascii_uppercase();
+            // check for tap costs
+            if cost == "T" {
+                return Ok(Some(Terminal::TapCost));
+            }
+            return match ManaCost::from_str(&cost) {
+                Ok(cost) => Ok(Some(Terminal::ManaCost(cost))),
+                Err(_) => Err(OdinLexerError::InvalidBraceCost(cost)),
+            }
+        }
 
         // check comment blocks (explainations)
         match CommentBlockDefiner::try_read(c) {
@@ -79,9 +92,47 @@ impl OdinLexer {
                     // add character to it !
                     c = match self.input.pop_front() {
                         Some(c) => c,
-                        None => return Err(OdinLexerError::NoCharsUntilEnd),
+                        None => return Err(OdinLexerError::NoTokenMatch(self.current_word.iter().collect())),
                     };
                 },
+            }
+        }
+    }
+
+    fn try_number(&mut self, c: char) -> u32 {
+        // while there are numbers, keep parsing. When not anymore, return value.
+        let mut result = c.to_digit(10).unwrap(); // we can unwrap safely as we called this function knowing c is a digit.
+
+        loop {
+            let c = match self.input.pop_front() {
+                Some(c) => c,
+                None => return result, // no more chars, return the result.
+            };
+            if c.is_digit(10) {
+                result = result * 10 + c.to_digit(10).unwrap();
+            }
+            else {
+                // put the char back and return result
+                self.input.push_front(c);
+                return result;
+            }
+        }
+    }
+
+    fn get_braces_symbol(&mut self) -> Result<String, OdinLexerError> {
+        let mut result = "".to_string();
+        // pop chars until we pop the end of braces.
+        // assume we do not find another brace, or this could break ?
+        loop {
+            let c = match self.input.pop_front() {
+                Some(c) => c,
+                None => return Err(OdinLexerError::CommentBlockNeverClose),
+            };
+            if c == '}' {
+                return Ok(result);
+            }
+            else {
+                result.push(c);
             }
         }
     }

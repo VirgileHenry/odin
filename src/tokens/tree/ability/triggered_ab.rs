@@ -15,7 +15,7 @@ impl AbilityDisplay for TriggeredAbility {
     fn display(&self, f: &mut fmt::Formatter<'_>, padding: &mut Vec<bool>) -> fmt::Result {
         match &self {
             TriggeredAbility::CommonTriggeredAbilities(ab) => {
-                write!(f, "Keyword (Triggered Ability) : {:?}", ab)?
+                write!(f, "Keyword (Triggered Ability) : {:?}", ab)?;
             },
             TriggeredAbility::TriggerAbility(cond, statement) => {
                 write!(f, "Triggered Ability:\n")?;

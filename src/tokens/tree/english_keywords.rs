@@ -6,6 +6,12 @@ pub enum EnglishKeywords {
     When,
     On,
     Put,
+    Return,
+    From,
+    To,
+    Deals,
+    Damage,
+    Sacrifice,
 }
 
 impl From<TriggerConditionKW> for EnglishKeywords {
@@ -21,6 +27,12 @@ impl From<ImperativeKW> for EnglishKeywords {
         match value {
             ImperativeKW::On => EnglishKeywords::On,
             ImperativeKW::Put => EnglishKeywords::Put,
+            ImperativeKW::Return => EnglishKeywords::Return,
+            ImperativeKW::From => EnglishKeywords::From,
+            ImperativeKW::To => EnglishKeywords::To,
+            ImperativeKW::Damage => EnglishKeywords::Damage,
+            ImperativeKW::Deals => EnglishKeywords::Deals,
+            ImperativeKW::Sacrifice => EnglishKeywords::Sacrifice,
         }
     }
 }

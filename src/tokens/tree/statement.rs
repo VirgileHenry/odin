@@ -1,4 +1,4 @@
-use crate::ability_display::AbilityDisplay;
+use crate::{ability_display::AbilityDisplay, ability_display_elems};
 
 use super::imperative::Imperative;
 
@@ -12,7 +12,11 @@ pub enum Statement {
 impl AbilityDisplay for Statement {
     fn display(&self, f: &mut std::fmt::Formatter<'_>, padding: &mut Vec<bool>) -> std::fmt::Result {
         match self {
-            Statement::Imperative(imp) => imp.display(f, padding),
+            Statement::Imperative(imp) => {
+                write!(f, "Imperative: ")?;
+                imp.display(f, padding)?;
+            },
         }
+        Ok(())
     }
 }
