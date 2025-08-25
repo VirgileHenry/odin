@@ -1,13 +1,13 @@
 use std::fmt;
 
-use mtg_data::AbilityKeyword;
+use mtg_data::KeywordAbility;
 
-use crate::{ability_display::AbilityDisplay, tokens::tree::{statement::Statement}, ability_display_elems};
+use crate::{ability_display::AbilityDisplay, tokens::tree::statement::Statement, ability_display_elems};
 
 /// Represent a Spell Ability.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SpellAbility {
-    CommonSpellAbility(AbilityKeyword),
+    CommonSpellAbility(KeywordAbility),
     Statement(Statement),
 }
 

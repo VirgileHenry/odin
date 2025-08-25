@@ -1,12 +1,13 @@
-/// Grammar for Magic: the gathering.
-/// termials are written in min "card".
-/// non terminals are written in maj, "OBJECT".
-/// rules are given by NON_TERMINAL: \n rule1 \n rule2,
-/// with rules being NON_TERM term NONE_TERM_2.
-/// terminals are grouped up under a single non term that define them. This help the rust impl.
-/// non terminals are also under enums, 
-/// terminals may have their actual syntax written in parenthesis.
-/// non-terminal 'TEXT' is the entry point.
+# Grammar for Magic: the gathering.
+# termials are written in min "card".
+# non terminals are written in maj, "OBJECT".
+# rules are given by NON_TERMINAL: \n rule1 \n rule2,
+# with rules being NON_TERM term NONE_TERM_2.
+# terminals are grouped up under a single non term that define them. This help the rust impl.
+# non terminals are also under enums, 
+# terminals may have their actual syntax written in parenthesis.
+# non-terminal 'TEXT' is the entry point.
+
 
 TEXT:
 	end of input ($)

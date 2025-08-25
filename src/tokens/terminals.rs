@@ -1,6 +1,7 @@
-use std::{fmt::{Display}, str::FromStr};
+use std::fmt::Display;
+use std::str::FromStr;
 
-use mtg_data::{MtgColor, AbilityKeyword, ManaCost};
+use mtg_data::{Color, KeywordAbility, Mana};
 use self::{
     actions::Actions,
     control_flow::ControlFlow,
@@ -22,15 +23,15 @@ use self::{
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Terminal {
     AppartenanceSpecifier(AppartenanceSpecifier),
-    ColorSpecifier(MtgColor),
+    ColorSpecifier(Color),
     ControlFlow(ControlFlow),
     ControlSpecifier(ControlSpecifier),
     Counter(Counter),
     CountSpecifier(CountSpecifier),
     EndOfInput,
     ImperativeKW(ImperativeKW),
-    Keyword(AbilityKeyword),
-    ManaCost(ManaCost),
+    Keyword(KeywordAbility),
+    Mana(Mana),
     Number(Number),
     Object(Object),
     SelfReferencing,
@@ -59,11 +60,11 @@ impl FromStr for Terminal {
             Ok(cf) => return Ok(Terminal::ControlFlow(cf)),
             Err(_) => {},
         }
-        match AbilityKeyword::from_str(s) {
+        match KeywordAbility::from_str(s) {
             Ok(kw) => return Ok(Terminal::Keyword(kw)),
             Err(_) => {},
         }
-        match MtgColor::from_str(s) {
+        match Color::from_str(s) {
             Ok(color) => return Ok(Terminal::ColorSpecifier(color)),
             Err(_) => {},
         }

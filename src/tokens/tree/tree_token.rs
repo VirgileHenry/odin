@@ -1,4 +1,4 @@
-use mtg_data::{MtgColor, AbilityKeyword, ManaCost};
+use mtg_data::{Color, KeywordAbility, Mana};
 
 use crate::tokens::terminals::{
     actions::Actions,
@@ -22,7 +22,7 @@ use super::{
         spell_ab::SpellAbility, static_ab::StaticAbility,
         triggered_ab::TriggeredAbility
     },
-    imperative::{Imperative},
+    imperative::Imperative,
     object_reference::ObjectReference,
     suffix_specifier::ObjectSuffixSpecifier,
     prefix_specifier::{ObjectPrefixSpecifier, ZonePrefixSpecifier},
@@ -40,7 +40,7 @@ pub enum TreeNode {
     Action(Actions), // an action an object can do
     ActivatedAb(ActivatedAbility), // activated ability
     AppartenanceSpecifier(AppartenanceSpecifier), // any appartenance spec (your, an opponent's)
-    ColorSpecifier(MtgColor), // any col spec (see Terminal::ColorSpec)
+    ColorSpecifier(Color), // any col spec (see Terminal::ColorSpec)
     ControlFlow(ControlFlow),
     ControlSpecifier(ControlSpecifier), // any contr spec (see Terminal::ControlSpec)
     Cost(Cost),
@@ -50,7 +50,7 @@ pub enum TreeNode {
     EndOfInput,
     EnglishKeywords(EnglishKeywords),
     Imperative(Imperative), // something a player must do
-    Keyword(AbilityKeyword),
+    Keyword(KeywordAbility),
     Number(Number), // any number (see Terminal::Number)
     Object(Object), // represent an object
     ObjectReference(ObjectReference), // self referencing, or specified obj
@@ -86,7 +86,7 @@ impl From<Terminal> for TreeNode {
             Terminal::TerminalAction(data) => TreeNode::Action(data),
             Terminal::TriggerCondKW(data) => TreeNode::EnglishKeywords(data.into()),
             Terminal::Zone(data) => TreeNode::Zone(data),
-            Terminal::ManaCost(data) => TreeNode::Cost(Cost::ManaCost(data)),
+            Terminal::Mana(data) => TreeNode::Cost(Cost::ManaCost(data)),
             Terminal::TapCost => TreeNode::Cost(Cost::TapCost),
         }
     }

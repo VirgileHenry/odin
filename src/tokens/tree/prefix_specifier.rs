@@ -1,4 +1,4 @@
-use mtg_data::MtgColor;
+use mtg_data::Color;
 
 use crate::{ability_display::AbilityDisplay, ability_display_vec, tokens::terminals::{specifiers::appartenace::AppartenanceSpecifier, objects::Object}};
 
@@ -6,7 +6,7 @@ use crate::{ability_display::AbilityDisplay, ability_display_vec, tokens::termin
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ObjectPrefixSpecifier {
     /// A specifier for the color of the Object.
-    Color(MtgColor),
+    Color(Color),
     Object(Object),
 }
 

@@ -30,7 +30,7 @@ fn try_parse(mut input: VecDeque<TreeNode>, mut stack: Vec<TreeNode>) -> Result<
                     Ok(new_nodes) => {
                         // try different rules
                         for new_node in new_nodes.into_iter() {
-                            println!("Managed to parse rule {:?} from {:?}", new_node, &stack[i..]);
+                            // println!("Managed to parse rule {:?} from {:?}", new_node, &stack[i..]);
                             // recursive call to try
                             let new_input = input.clone();
                             let mut new_stack = stack.clone();
@@ -44,8 +44,9 @@ fn try_parse(mut input: VecDeque<TreeNode>, mut stack: Vec<TreeNode>) -> Result<
                             match try_parse(new_input.clone(), new_stack.clone()) {
                                 Ok(ab_tree) => return Ok(ab_tree),
                                 Err(_) => {
-                                    println!("failed at branch :\nstack: {:?}\ninput: {:?}\n", new_stack, new_input);
-                                    /* this branch could not succeed, keep trying */},
+                                    // println!("failed at branch :\nstack: {:?}\ninput: {:?}\n", new_stack, new_input);
+                                    /* this branch could not succeed, keep trying */
+                                },
                             }
                         }
                     },

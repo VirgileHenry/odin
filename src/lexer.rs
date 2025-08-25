@@ -1,10 +1,15 @@
-use std::{collections::VecDeque, str::FromStr};
+use std::str::FromStr;
 
-use mtg_data::ManaCost;
+use mtg_data::Mana;
 
 use crate::tokens::terminals::{Terminal, numbers::Number};
 
 use self::error::OdinLexerError;
+
+
+
+const DELIMITERS: [char; 2] = ['(', ')'];
+const DISCARDABLE_PREFIX: [char; 1] = [' '];
 
 /// Create a vec of Terminals from a string. Can fail, and will return an error.
 pub fn lex(input: &str) -> Result<Vec<Terminal>, OdinLexerError> {
@@ -14,16 +19,15 @@ pub fn lex(input: &str) -> Result<Vec<Terminal>, OdinLexerError> {
 
 /// Internal Odin lexer. 
 struct OdinLexer {
-    input: VecDeque<char>,
-    current_word: Vec<char>,
+    /// Reversed input regarding what we got, to push / pop it's end.
+    input: String,
 }
 
 impl OdinLexer {
     /// Creates a new Odin lexer.
     pub fn new(input: &str) -> OdinLexer {
         OdinLexer { 
-            input: input.chars().collect(),
-            current_word: Vec::new(),
+            input: input.chars().rev().collect(),
         }
     }
 
@@ -43,142 +47,134 @@ impl OdinLexer {
     }
 
     /// Create a token from the input, consuming only the characters used.
-    /// When called, this function assumes current_word is empty.
     fn parse_token(&mut self) -> Result<Option<Terminal>, OdinLexerError> {
-        // get first char
-        let mut c = self.input.pop_front().unwrap(); // unwrap bc if this is called, input is non empty
-        // first, try to match single letter possibilities.
-        // check flow control
-        if c == ' ' { return Ok(None); } // space is a custom char, spacing tokens. If first char, remove it.
 
-        if c.is_digit(10) {
-            let num = self.try_number(c);
-            return Ok(Some(Terminal::Number(Number::Number(num))));
+        // discard garbage at the front
+        while self.input.ends_with(&DISCARDABLE_PREFIX) {
+            self.input.pop();
         }
 
-        if c == '{' {
-            // let's read a cost thingy
-            let cost = self.get_braces_symbol()?.to_ascii_uppercase();
-            // check for tap costs
-            if cost == "T" {
-                return Ok(Some(Terminal::TapCost));
-            }
-            return match ManaCost::from_str(&cost) {
-                Ok(cost) => Ok(Some(Terminal::ManaCost(cost))),
-                Err(_) => Err(OdinLexerError::InvalidBraceCost(cost)),
+        // if we encounter a comment, remove it
+        if self.input.ends_with(&CommentBlockDelimiter::OPENING_DELIMITERS) {
+            let first_char = self.input.pop()
+                .expect("No first char, but input comment delimiter detected");
+            let opening_delimiter = CommentBlockDelimiter::opening_from_char(first_char)
+                .expect("Comment block detected, but failed to parse first char");
+            self.remove_comment_block(opening_delimiter)?;
+            // discard garbage at the front, after comment
+            while self.input.ends_with(&DISCARDABLE_PREFIX) {
+                self.input.pop();
             }
         }
 
-        // check comment blocks (explainations)
-        match CommentBlockDefiner::try_read(c) {
-            Some(comment_entry) => {
-                self.remove_comment_block(comment_entry)?;
-                return Ok(None);
+        match self.input.pop() {
+            Some(digit_char @ '0'..='9') => self.parse_number(digit_char)
+                .map(|n| Some(Terminal::Number(Number::Number(n)))),
+            Some('{') => {
+                let cost = self.parse_braces_content()?.to_ascii_uppercase();
+                if cost == "T" {
+                    Ok(Some(Terminal::TapCost))
+                }
+                else {
+                    match Mana::from_str(&cost) {
+                        Ok(cost) => Ok(Some(Terminal::Mana(cost))),
+                        Err(_) => Err(OdinLexerError::InvalidBraceCost(cost)),
+                    }
+                }
             },
-            None => {},
+            Some(other) => {
+                let mut buffer = String::from(other);
+                loop {
+                    match Terminal::from_str(&buffer) {
+                        Ok(token) => break Ok(Some(token)),
+                        Err(_) => match self.input.pop() {
+                            None => break Err(OdinLexerError::NoTokenMatch(buffer)),
+                            Some(del) if DELIMITERS.contains(&del) => break Err(OdinLexerError::NoTokenMatch(buffer)),
+                            Some(other) => buffer.push(other),
+                        }
+                    }
+                }
+            }
+            None => Ok(None), // empty input
         }
-        // no one char match : start word loop 
+
+    }
+
+    fn parse_number(&mut self, first_char: char) -> Result<i32, OdinLexerError> {
         
-        loop {
-            self.current_word.push(c);
-            let word: String = self.current_word.iter().collect();
-            let word = word.to_ascii_lowercase();
-            match Terminal::from_str(&word) {
-                Ok(token) => {
-                    self.clear_word();
-                    return Ok(Some(token))
-                },
-                Err(_) => {
-                    // add character to it !
-                    c = match self.input.pop_front() {
-                        Some(c) => c,
-                        None => return Err(OdinLexerError::NoTokenMatch(self.current_word.iter().collect())),
-                    };
-                },
-            }
-        }
-    }
-
-    fn try_number(&mut self, c: char) -> u32 {
-        // while there are numbers, keep parsing. When not anymore, return value.
-        let mut result = c.to_digit(10).unwrap(); // we can unwrap safely as we called this function knowing c is a digit.
+        let mut buffer = String::from(first_char);
 
         loop {
-            let c = match self.input.pop_front() {
-                Some(c) => c,
-                None => return result, // no more chars, return the result.
-            };
-            if c.is_digit(10) {
-                result = result * 10 + c.to_digit(10).unwrap();
-            }
-            else {
-                // put the char back and return result
-                self.input.push_front(c);
-                return result;
+            match self.input.pop() {
+                Some(digit @ '0'..='9') => buffer.push(digit),
+                Some(other) => {
+                    self.input.push(other);
+                    break;
+                },
+                None => break,
             }
         }
+
+        buffer.parse().map_err(|_| OdinLexerError::InvalidNumeric(buffer))
     }
 
-    fn get_braces_symbol(&mut self) -> Result<String, OdinLexerError> {
+    fn parse_braces_content(&mut self) -> Result<String, OdinLexerError> {
         let mut result = "".to_string();
-        // pop chars until we pop the end of braces.
-        // assume we do not find another brace, or this could break ?
+        // Pop chars until we pop the end of braces.
         loop {
-            let c = match self.input.pop_front() {
-                Some(c) => c,
-                None => return Err(OdinLexerError::CommentBlockNeverClose),
-            };
-            if c == '}' {
-                return Ok(result);
-            }
-            else {
-                result.push(c);
+            match self.input.pop() {
+                Some('}') => break Ok(result),
+                Some('{') => {
+                    // bit of a weird case, as we found a brace inside one another. Parse it and add it to the result
+                    result.push('{');
+                    result.push_str(&self.parse_braces_content()?);
+                    result.push('}');
+                }
+                Some(other) => result.push(other),
+                None => break Err(OdinLexerError::UnclosedCost),
             }
         }
     }
 
-    /// Remove a comment block from the input, considering we are in one.
-    fn remove_comment_block(&mut self, comment_entry: CommentBlockDefiner) -> Result<(), OdinLexerError> {
+    /// Remove a comment block from the input.
+    /// 
+    /// This assumes we entered a comment block, and requires the entry delimiter to find the next matching closing delimiter.
+    fn remove_comment_block(&mut self, opening_delimiter: CommentBlockDelimiter) -> Result<(), OdinLexerError> {
         // pop chars until we pop the end of our comment entry.
         // if we find another comment entry, call recursively.
         loop {
-            let c = match self.input.pop_front() {
-                Some(c) => c,
-                None => return Err(OdinLexerError::CommentBlockNeverClose),
-            };
-            if comment_entry.is_closing(c) {
-                break;
+            let c = self.input.pop().ok_or(OdinLexerError::UnclosedCommentBlock { opening_delimiter })?;
+            if opening_delimiter.closing_from_char(c) {
+                break Ok(()); // all good, we finisehd
             }
-            match CommentBlockDefiner::try_read(c) {
-                Some(other_entry) => self.remove_comment_block(other_entry)?,
-                None => {},
+            if let Some(other_opening_delimiter) = CommentBlockDelimiter::opening_from_char(c) {
+                self.remove_comment_block(other_opening_delimiter)?;
             }
         }
-
-        Ok(())
     }
 
-    /// Clear the current stored word.
-    fn clear_word(&mut self) {
-        self.current_word.clear();
-    }
 }
 
-enum CommentBlockDefiner {
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CommentBlockDelimiter {
     Parenthesis,
 }
 
-impl CommentBlockDefiner {
-    pub fn try_read(c: char) -> Option<CommentBlockDefiner> {
+impl CommentBlockDelimiter {
+
+    const OPENING_DELIMITERS: [char; 1] = ['('];
+
+    fn opening_from_char(c: char) -> Option<CommentBlockDelimiter> {
         match c {
-            '(' => Some(CommentBlockDefiner::Parenthesis),
+            '(' => Some(CommentBlockDelimiter::Parenthesis),
             _ => None,
         }
     }
 
-    pub fn is_closing(&self, c: char) -> bool {
+    fn closing_from_char(&self, c: char) -> bool {
         match self {
-            CommentBlockDefiner::Parenthesis => c == ')',
+            CommentBlockDelimiter::Parenthesis => c == ')',
         }
     }
 }

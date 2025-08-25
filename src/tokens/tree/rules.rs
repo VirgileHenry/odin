@@ -1,4 +1,4 @@
-use mtg_data::AbilityKeyword;
+use mtg_data::KeywordAbility;
 
 use super::{tree_token::TreeNode, ability::{spell_ab::SpellAbility, activated_ab::ActivatedAbility}, zone_reference::ZoneReference, cost::Cost};
 
@@ -147,9 +147,10 @@ pub fn try_rule(value: &[TreeNode]) -> Result<Vec<TreeNode>, ()> {
         
         // keyword abilities can be static or triggered abilities
         [TreeNode::Keyword(kw)] => match kw {
-            AbilityKeyword::Flying => Ok(vec![TreeNode::StaticAb(StaticAbility::CommonStaticAbility(AbilityKeyword::Flying))]),
-            AbilityKeyword::Mentor => Ok(vec![TreeNode::TriggeredAb(TriggeredAbility::CommonTriggeredAbilities(AbilityKeyword::Mentor))]),
-            AbilityKeyword::Rebound => Ok(vec![TreeNode::SpellAb(SpellAbility::CommonSpellAbility(AbilityKeyword::Rebound))]),
+            KeywordAbility::Flying => Ok(vec![TreeNode::StaticAb(StaticAbility::CommonStaticAbility(KeywordAbility::Flying))]),
+            KeywordAbility::Mentor => Ok(vec![TreeNode::TriggeredAb(TriggeredAbility::CommonTriggeredAbilities(KeywordAbility::Mentor))]),
+            KeywordAbility::Rebound => Ok(vec![TreeNode::SpellAb(SpellAbility::CommonSpellAbility(KeywordAbility::Rebound))]),
+            _ => panic!("Unsupported in rules: {kw:?}")
         }
         _ => Err(()),
     }

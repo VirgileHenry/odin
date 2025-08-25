@@ -2,7 +2,7 @@ use std::fmt;
 
 pub trait AbilityDisplay {
     /// Display mtg abilities in a tree-like manner.
-    /// The padding represent the spacing to put, with a bar (|) for true and space for false.
+    /// The padding represent the spacing to put, with a bar (│) for true and space for false.
     /// The is last tells wether this elements was the last.
     fn display(&self, f: &mut fmt::Formatter<'_>, padding: &mut Vec<bool>) -> fmt::Result;
 }
@@ -15,10 +15,10 @@ macro_rules! ability_display_elems {
     ($f:expr; $padding:expr; $last:expr) => {
         {
             for is_bar in $padding.iter() {
-                if *is_bar { write!($f, "|   ")?; }
+                if *is_bar { write!($f, "│   ")?; }
                 else { write!($f, "    ")?; }
             }
-            write!($f, "`- ")?;
+            write!($f, "└─ ")?;
             $padding.push(false);
             $last.display($f, $padding)?;
             $padding.pop();
@@ -27,10 +27,10 @@ macro_rules! ability_display_elems {
     ($f:expr; $padding:expr; $first:expr, $($rest:expr),*) => {
         {   
             for is_bar in $padding.iter() {
-                if *is_bar { write!($f, "|   ")?; }
+                if *is_bar { write!($f, "│   ")?; }
                 else { write!($f, "    ")?; }
             }
-            write!($f, "|- ")?;
+            write!($f, "├─ ")?;
             $padding.push(true);
             $first.display($f, $padding)?;
             write!($f, "\n")?;
@@ -49,28 +49,28 @@ macro_rules! ability_display_vec {
         {
             if $vec.is_empty() {
                 for is_bar in $padding.iter() {
-                    if *is_bar { write!($f, "|   ")?; }
+                    if *is_bar { write!($f, "│   ")?; }
                     else { write!($f, "    ")?; }
                 }
-                write!($f, "`- (Empty)")?;
+                write!($f, "└─ (Empty)")?;
             }
             else {
                 for i in 0..$vec.len()-1 {
                     for is_bar in $padding.iter() {
-                        if *is_bar { write!($f, "|   ")?; }
+                        if *is_bar { write!($f, "│   ")?; }
                         else { write!($f, "    ")?; }
                     }
-                    write!($f, "|- ")?;
+                    write!($f, "├─ ")?;
                     $padding.push(true);
                     $vec.get(i).unwrap().display($f, $padding)?;
                     write!($f, "\n")?;
                     $padding.pop();
                 }
                 for is_bar in $padding.iter() {
-                    if *is_bar { write!($f, "|   ")?; }
+                    if *is_bar { write!($f, "│   ")?; }
                     else { write!($f, "    ")?; }
                 }
-                write!($f, "`- ")?;
+                write!($f, "└─ ")?;
                 $padding.push(false);
                 $vec.get($vec.len()-1).unwrap().display($f, $padding)?;
                 $padding.pop();

@@ -11,3 +11,6 @@ strum = "0.24"
 strum_macros = "0.24"
 lazy_static = "1.4.0"
 regex = "1.7.3"
+
+[features]
+verbose-parser = []

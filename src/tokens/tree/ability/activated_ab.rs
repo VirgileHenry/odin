@@ -15,10 +15,10 @@ impl AbilityDisplay for ActivatedAbility {
                 write!(f, "Activated ability:\n")?;
                 // have to do some stuff manually here
                 for is_bar in padding.iter() {
-                    if *is_bar { write!(f, "|   ")?; }
+                    if *is_bar { write!(f, "│   ")?; }
                     else { write!(f, "    ")?; }
                 }
-                write!(f, "|- Costs\n")?;
+                write!(f, "├─ Costs\n")?;
                 padding.push(true);
                 ability_display_vec!(f; padding; costs);
                 padding.pop();

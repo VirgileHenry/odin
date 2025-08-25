@@ -1,5 +1,5 @@
 use std::fmt;
-use mtg_data::AbilityKeyword;
+use mtg_data::KeywordAbility;
 use crate::ability_display::AbilityDisplay;
 
 use self::{
@@ -30,14 +30,15 @@ impl AbilityDisplay for Ability {
     }
 }
 
-impl From<AbilityKeyword> for Ability {
-    fn from(value: AbilityKeyword) -> Self {
+impl From<KeywordAbility> for Ability {
+    fn from(value: KeywordAbility) -> Self {
         // got to match the type of ability it is 
         // most of them or static, some triggered
         match value {
-            AbilityKeyword::Flying => Ability::Static(StaticAbility::CommonStaticAbility(value)),
-            AbilityKeyword::Mentor => Ability::Triggered(TriggeredAbility::CommonTriggeredAbilities(value)),
-            AbilityKeyword::Rebound => Ability::Spell(SpellAbility::CommonSpellAbility(AbilityKeyword::Rebound)),
+            KeywordAbility::Flying => Ability::Static(StaticAbility::CommonStaticAbility(value)),
+            KeywordAbility::Mentor => Ability::Triggered(TriggeredAbility::CommonTriggeredAbilities(value)),
+            KeywordAbility::Rebound => Ability::Spell(SpellAbility::CommonSpellAbility(KeywordAbility::Rebound)),
+            _ => panic!("Unsupported: {value:?}")
         }
     }
 }

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use mtg_data::AbilityKeyword;
+use mtg_data::KeywordAbility;
 
 use crate::ability_display::AbilityDisplay;
 
@@ -8,7 +8,7 @@ use crate::ability_display::AbilityDisplay;
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum StaticAbility {
     /// A common static ability, represented by a single keyword. (e.g.: "flying") 
-    CommonStaticAbility(AbilityKeyword),
+    CommonStaticAbility(KeywordAbility),
 }
 
 impl AbilityDisplay for StaticAbility {

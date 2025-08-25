@@ -1,4 +1,3 @@
-
 /*
 ODIN
 
@@ -8,6 +7,7 @@ ALternatively, there is the lex and parse functions that allows lexing and parsi
 */
 
 pub mod ability_display;
+pub mod ability_tree;
 pub mod errors;
 pub mod lexer;
 pub mod parser;

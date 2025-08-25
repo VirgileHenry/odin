@@ -9,7 +9,7 @@ use crate::ability_display::AbilityDisplay;
 #[derive(EnumIter)]
 pub enum Number {
     A,
-    Number(u32),
+    Number(i32),
 }
 
 impl FromStr for Number {
