@@ -6,7 +6,7 @@ use crate::tokens::{
 
 /// Errors that can be thrown by the parser.
 #[derive(Debug, Clone)]
-pub enum OdinParserError {
+pub enum ParserError {
     /// The parser is stuck in the current branch, and is going to backtrack.
     /// If this is thrown by the parsing function, the parser was unable to parse the given token vec.
     Stuck{

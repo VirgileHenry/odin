@@ -8,17 +8,17 @@ use crate::tokens::{
     }
 };
 
-use self::error::OdinParserError;
+use self::error::ParserError;
 
-pub fn parse(input: Vec<Terminal>) -> Result<AbilityTree, OdinParserError> {
+pub fn parse(input: Vec<Terminal>) -> Result<AbilityTree, ParserError> {
     let input: VecDeque<TreeNode> = input.into_iter().map(|e| e.into()).collect();
     match try_parse(input, Vec::new())? {
         TreeNode::Text(result) => Ok(result),
-        _ => Err(OdinParserError::InvalidRoot),
+        _ => Err(ParserError::InvalidRoot),
     }
 }
 
-fn try_parse(mut input: VecDeque<TreeNode>, mut stack: Vec<TreeNode>) -> Result<TreeNode, OdinParserError> {
+fn try_parse(mut input: VecDeque<TreeNode>, mut stack: Vec<TreeNode>) -> Result<TreeNode, ParserError> {
     loop {
         // recursive call that allow backtracking if we find an error.
         // look all possible rules match on our stack
@@ -68,7 +68,7 @@ fn try_parse(mut input: VecDeque<TreeNode>, mut stack: Vec<TreeNode>) -> Result<
                     }
                 }
                 // and we haven't managed to fully parse : return error
-                return Err(OdinParserError::Stuck{ stack, input })
+                return Err(ParserError::Stuck{ stack, input })
             }
         }
     }

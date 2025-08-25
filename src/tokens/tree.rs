@@ -2,7 +2,7 @@ use std::fmt::{Display, self};
 use std::str::FromStr;
 
 use crate::ability_display_vec;
-use crate::errors::OdinErrors;
+use crate::error::OdinError;
 use crate::lexer::lex;
 use crate::parser::parse;
 use crate::tokens::tree::ability::Ability;
@@ -32,7 +32,7 @@ impl AbilityDisplay for AbilityTree {
 }
 
 impl FromStr for AbilityTree {
-    type Err = OdinErrors;
+    type Err = OdinError;
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Ok(parse(lex(input)?)?)
     }
