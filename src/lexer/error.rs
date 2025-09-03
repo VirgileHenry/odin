@@ -2,7 +2,6 @@
 #[derive(Debug, Clone)]
 pub enum LexerError<'source> {
     UnclosedCommentBlock {
-        opening_delimiter: crate::lexer::CommentBlockDelimiter,
         span: crate::lexer::span::Span<'source>,
     },
     UnclosedCost {
@@ -29,14 +28,9 @@ impl<'source> std::fmt::Display for LexerError<'source> {
             LexerError::NoTokenMatch { span } => {
                 write!(f, "No token could match \"{}\"", span.text)?
             }
-            LexerError::UnclosedCommentBlock {
-                opening_delimiter,
-                span,
-            } => write!(
-                f,
-                "Comment block opened with \"{}\" was never closed: \"{}\"",
-                opening_delimiter, span.text
-            )?,
+            LexerError::UnclosedCommentBlock { span } => {
+                write!(f, "Comment block was never closed: \"{}\"", span.text)?
+            }
             LexerError::UnclosedCost { span } => write!(
                 f,
                 "Cost block opened with \"{{\" was never closed: \"{}\"",

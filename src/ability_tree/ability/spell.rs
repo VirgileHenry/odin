@@ -2,3 +2,9 @@
 pub struct SpellAbility {
     effect: crate::ability_tree::statement::Statement,
 }
+
+impl crate::ability_tree::AbilityTreeImpl for SpellAbility {
+    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+        self.effect.display(out)
+    }
+}

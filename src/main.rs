@@ -1,22 +1,13 @@
-use std::env;
-
-pub mod ability_tree;
 pub mod ability_display;
-pub mod errors;
+pub mod ability_tree;
+pub mod error;
 pub mod lexer;
-pub mod parser;
-pub mod tokens;
 
+fn main() {
+    let tree = ability_tree::example();
+    let err = tree.display(&mut std::io::stdout().lock());
 
-use errors::OdinErrors;
-
-
-fn main() -> Result<(), OdinErrors> {
-
-    let mut args = env::args();
-    // discard first arg (prog launch)
-    let _ = args.next();
-
-    Ok(())
+    if let Err(err) = err {
+        eprintln!("Failed to display ability tree: {err}");
+    }
 }
-

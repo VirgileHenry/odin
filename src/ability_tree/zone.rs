@@ -1,14 +1,35 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Zone {
     Graveyard,
-    Battlefield,
     Library,
     Hand,
     Exile,
 }
 
+impl std::fmt::Display for Zone {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Zone::Graveyard => write!(f, "Graveyard"),
+            Zone::Library => write!(f, "Library"),
+            Zone::Hand => write!(f, "Hand"),
+            Zone::Exile => write!(f, "Exile"),
+        }
+    }
+}
+
+impl crate::ability_tree::terminals::Terminal for Zone {}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ZoneReference {
     TheBattlefield,
     OwnedZone(Zone, crate::ability_tree::terminals::AppartenanceSpecifier),
+}
+
+impl crate::ability_tree::AbilityTreeImpl for ZoneReference {
+    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+        match self {
+            ZoneReference::TheBattlefield => write!(out, "The Battlefield"),
+            ZoneReference::OwnedZone(zone, appartenance) => write!(out, "{appartenance} {zone}"),
+        }
+    }
 }
