@@ -4,7 +4,10 @@ pub struct SpellAbility {
 }
 
 impl crate::ability_tree::AbilityTreeImpl for SpellAbility {
-    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+    fn display<W: std::io::Write>(
+        &self,
+        out: &mut crate::utils::TreeFormatter<'_, W>,
+    ) -> std::io::Result<()> {
         self.effect.display(out)
     }
 }

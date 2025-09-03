@@ -26,10 +26,16 @@ pub enum ZoneReference {
 }
 
 impl crate::ability_tree::AbilityTreeImpl for ZoneReference {
-    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+    fn display<W: std::io::Write>(
+        &self,
+        out: &mut crate::utils::TreeFormatter<'_, W>,
+    ) -> std::io::Result<()> {
+        use std::io::Write;
         match self {
             ZoneReference::TheBattlefield => write!(out, "The Battlefield"),
-            ZoneReference::OwnedZone(zone, appartenance) => write!(out, "{appartenance} {zone}"),
+            ZoneReference::OwnedZone(zone, appartenance) => {
+                write!(out, "{appartenance} {zone}")
+            }
         }
     }
 }

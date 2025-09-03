@@ -14,11 +14,24 @@ pub struct AbilityTree {
 }
 
 impl AbilityTree {
-    pub fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
-        writeln!(out, "Abilities:")?;
+    pub fn display<W: std::io::Write>(&self, output: &mut W) -> std::io::Result<()> {
+        use std::io::Write;
+        let mut tree_formatter = crate::utils::TreeFormatter::new(output, 64);
 
-        for ability in self.abilities.iter() {
-            ability.display(out)?;
+        write!(tree_formatter, "Abilities:")?;
+        for ability in self
+            .abilities
+            .iter()
+            .take(self.abilities.len().saturating_sub(1))
+        {
+            tree_formatter.push_inter_branch()?;
+            ability.display(&mut tree_formatter)?;
+            tree_formatter.pop_branch();
+        }
+        if let Some(ability) = self.abilities.last() {
+            tree_formatter.push_final_branch()?;
+            ability.display(&mut tree_formatter)?;
+            tree_formatter.pop_branch();
         }
 
         Ok(())
@@ -26,7 +39,10 @@ impl AbilityTree {
 }
 
 pub trait AbilityTreeImpl {
-    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()>;
+    fn display<W: std::io::Write>(
+        &self,
+        out: &mut crate::utils::TreeFormatter<'_, W>,
+    ) -> std::io::Result<()>;
 }
 
 pub fn example() -> AbilityTree {

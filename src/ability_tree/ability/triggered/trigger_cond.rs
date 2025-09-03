@@ -7,14 +7,25 @@ pub enum TriggerCondition {
 }
 
 impl crate::ability_tree::AbilityTreeImpl for TriggerCondition {
-    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+    fn display<W: std::io::Write>(
+        &self,
+        out: &mut crate::utils::TreeFormatter<'_, W>,
+    ) -> std::io::Result<()> {
+        use std::io::Write;
         match self {
             TriggerCondition::ObjectDoesAction { object, action } => {
-                writeln!(out, "When:")?;
-                writeln!(out, "Object:")?;
+                write!(out, "When:")?;
+                out.push_inter_branch()?;
+                write!(out, "Object:")?;
+                out.push_final_branch()?;
                 object.display(out)?;
-                writeln!(out, "")?;
-                writeln!(out, "Does: {action}")?;
+                out.pop_branch();
+                out.next_final_branch()?;
+                write!(out, "Does Action:")?;
+                out.push_final_branch()?;
+                write!(out, "{action}")?;
+                out.pop_branch();
+                out.pop_branch();
                 Ok(())
             }
         }

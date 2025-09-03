@@ -28,22 +28,42 @@ pub enum ObjectReference {
 }
 
 impl crate::ability_tree::AbilityTreeImpl for ObjectReference {
-    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+    fn display<W: std::io::Write>(
+        &self,
+        out: &mut crate::utils::TreeFormatter<'_, W>,
+    ) -> std::io::Result<()> {
+        use std::io::Write;
         match self {
-            ObjectReference::SelfReferencing => write!(out, "~ (Self Referencing)"),
+            ObjectReference::SelfReferencing => write!(out, "Self Referencing (~)"),
             ObjectReference::SpecifiedObj {
                 amount,
                 object,
                 specifiers,
             } => {
-                writeln!(out, "Specified Object:")?;
-                writeln!(out, "Amount: {amount}")?;
-                writeln!(out, "Objects: {object}")?;
-                writeln!(out, "Specifiers:")?;
-                for specifier in specifiers.iter() {
+                write!(out, "Specified Object:")?;
+                out.push_inter_branch()?;
+                write!(out, "Amount:")?;
+                out.push_final_branch()?;
+                write!(out, "{amount}")?;
+                out.pop_branch();
+                out.next_inter_branch()?;
+                write!(out, "Object(s):")?;
+                out.push_final_branch()?;
+                write!(out, "{object}")?;
+                out.pop_branch();
+                out.next_final_branch()?;
+                write!(out, "Specifier(s):")?;
+                for specifier in specifiers.iter().take(specifiers.len().saturating_sub(1)) {
+                    out.push_inter_branch()?;
                     specifier.display(out)?;
-                    writeln!(out, "")?;
+                    out.pop_branch();
                 }
+                if let Some(specifier) = specifiers.last() {
+                    out.push_final_branch()?;
+                    specifier.display(out)?;
+                    out.pop_branch();
+                }
+                out.pop_branch();
                 Ok(())
             }
         }
@@ -58,7 +78,11 @@ pub enum ObjectSpecifier {
 }
 
 impl crate::ability_tree::AbilityTreeImpl for ObjectSpecifier {
-    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+    fn display<W: std::io::Write>(
+        &self,
+        out: &mut crate::utils::TreeFormatter<'_, W>,
+    ) -> std::io::Result<()> {
+        use std::io::Write;
         match self {
             ObjectSpecifier::Color(color) => write!(out, "Color Specifier: {color}"),
             ObjectSpecifier::Object(object) => write!(out, "Object Specifier: {object}"),

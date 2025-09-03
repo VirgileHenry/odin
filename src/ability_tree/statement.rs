@@ -5,16 +5,20 @@ pub enum Statement {
 }
 
 impl crate::ability_tree::AbilityTreeImpl for Statement {
-    fn display<W: std::io::Write>(&self, out: &mut W) -> std::io::Result<()> {
+    fn display<W: std::io::Write>(
+        &self,
+        out: &mut crate::utils::TreeFormatter<'_, W>,
+    ) -> std::io::Result<()> {
+        use std::io::Write;
         match self {
-            Statement::Imperative(imperative) => {
-                writeln!(out, "Imperative:")?;
-                imperative.display(out)
-            }
-            Statement::May(may) => {
-                writeln!(out, "May Ability")?;
-                may.display(out)
-            }
+            Statement::Imperative(_) => write!(out, "Imperative:")?,
+            Statement::May(_) => write!(out, "May Ability")?,
         }
+        out.push_final_branch()?;
+        match self {
+            Statement::Imperative(imp) | Statement::May(imp) => imp.display(out)?,
+        }
+        out.pop_branch();
+        Ok(())
     }
 }

@@ -25,7 +25,7 @@ pub enum Counter {
 impl std::fmt::Display for Counter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Counter::PlusOne => write!(f, "+1/+1"),
+            Counter::PlusOne => write!(f, "+1/+1 Counter"),
         }
     }
 }
