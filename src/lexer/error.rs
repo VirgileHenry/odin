@@ -1,24 +1,24 @@
 /// Errors that can be thrown by the lexer.
 #[derive(Debug, Clone)]
-pub enum LexerError<'source> {
+pub enum LexerError<'src> {
     UnclosedCommentBlock {
-        span: crate::lexer::span::Span<'source>,
+        span: crate::lexer::span::Span<'src>,
     },
     UnclosedCost {
-        span: crate::lexer::span::Span<'source>,
+        span: crate::lexer::span::Span<'src>,
     },
     NoTokenMatch {
-        span: crate::lexer::span::Span<'source>,
+        span: crate::lexer::span::Span<'src>,
     },
     InvalidBraceCost {
-        span: crate::lexer::span::Span<'source>,
+        span: crate::lexer::span::Span<'src>,
     },
     InvalidNumeric {
-        span: crate::lexer::span::Span<'source>,
+        span: crate::lexer::span::Span<'src>,
     },
 }
 
-impl<'source> std::fmt::Display for LexerError<'source> {
+impl<'src> std::fmt::Display for LexerError<'src> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             LexerError::InvalidBraceCost { span } => {

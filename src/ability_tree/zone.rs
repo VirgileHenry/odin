@@ -17,12 +17,24 @@ impl std::fmt::Display for Zone {
     }
 }
 
-impl crate::ability_tree::terminals::Terminal for Zone {}
+impl crate::ability_tree::terminals::Terminal for Zone {
+    fn repr(&self) -> &'static str {
+        match self {
+            Zone::Graveyard => "graveyard",
+            Zone::Library => "library",
+            Zone::Hand => "hand",
+            Zone::Exile => "exile",
+        }
+    }
+    fn iter() -> impl Iterator<Item = Self> {
+        [Zone::Graveyard, Zone::Library, Zone::Hand, Zone::Exile].into_iter()
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ZoneReference {
     TheBattlefield,
-    OwnedZone(Zone, crate::ability_tree::terminals::AppartenanceSpecifier),
+    OwnedZone(Zone, crate::ability_tree::terminals::Appartenance),
 }
 
 impl crate::ability_tree::AbilityTreeImpl for ZoneReference {

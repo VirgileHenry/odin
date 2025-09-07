@@ -1,4 +1,16 @@
-pub trait Terminal: std::fmt::Display {}
+pub trait Terminal: std::fmt::Display + Sized {
+    fn repr(&self) -> &'static str;
+    fn iter() -> impl Iterator<Item = Self>;
+    fn try_from_str(source: &str) -> Option<(Self, usize)> {
+        for item in Self::iter() {
+            if source.starts_with(item.repr()) {
+                let length = item.repr().len();
+                return Some((item, length));
+            }
+        }
+        None
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Number {
@@ -15,7 +27,18 @@ impl std::fmt::Display for Number {
     }
 }
 
-impl Terminal for Number {}
+impl Terminal for Number {
+    fn repr(&self) -> &'static str {
+        unreachable!("repr() shall not be used for the \"Number\" terminal!");
+    }
+    fn iter() -> impl Iterator<Item = Self> {
+        fn inner() -> std::iter::Empty<Number> {
+            unreachable!("iter() shall not be used for the \"Number\" terminal!");
+        }
+        inner()
+    }
+    fn try_from_str(source: &str) -> Option<(Self, usize)> {}
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Counter {
@@ -69,23 +92,23 @@ impl std::fmt::Display for ControlSpecifier {
 impl Terminal for ControlSpecifier {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum AppartenanceSpecifier {
+pub enum Appartenance {
     Your,
     AnyPlayer,
     AnOpponent,
 }
 
-impl std::fmt::Display for AppartenanceSpecifier {
+impl std::fmt::Display for Appartenance {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AppartenanceSpecifier::Your => write!(f, "Your"),
-            AppartenanceSpecifier::AnyPlayer => write!(f, "Any Player's"),
-            AppartenanceSpecifier::AnOpponent => write!(f, "An Opponent's"),
+            Appartenance::Your => write!(f, "Your"),
+            Appartenance::AnyPlayer => write!(f, "Any Player's"),
+            Appartenance::AnOpponent => write!(f, "An Opponent's"),
         }
     }
 }
 
-impl Terminal for AppartenanceSpecifier {}
+impl Terminal for Appartenance {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Actions {
@@ -101,3 +124,5 @@ impl std::fmt::Display for Actions {
         }
     }
 }
+
+impl Terminal for Actions {}

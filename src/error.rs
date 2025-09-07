@@ -1,9 +1,9 @@
 #[derive(Debug, Clone)]
-pub enum OdinError<'source> {
-    LexerError(crate::lexer::LexerError<'source>),
+pub enum OdinError<'src> {
+    LexerError(crate::lexer::LexerError<'src>),
 }
 
-impl<'source> std::fmt::Display for OdinError<'source> {
+impl<'src> std::fmt::Display for OdinError<'src> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             OdinError::LexerError(err) => write!(f, "Lexer error: {err}")?,
@@ -12,8 +12,8 @@ impl<'source> std::fmt::Display for OdinError<'source> {
     }
 }
 
-impl<'source> From<crate::lexer::LexerError<'source>> for OdinError<'source> {
-    fn from(e: crate::lexer::LexerError<'source>) -> OdinError<'source> {
+impl<'src> From<crate::lexer::LexerError<'src>> for OdinError<'src> {
+    fn from(e: crate::lexer::LexerError<'src>) -> OdinError<'src> {
         OdinError::LexerError(e)
     }
 }

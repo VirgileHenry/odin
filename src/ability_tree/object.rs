@@ -15,7 +15,18 @@ impl std::fmt::Display for Object {
     }
 }
 
-impl crate::ability_tree::terminals::Terminal for Object {}
+impl crate::ability_tree::terminals::Terminal for Object {
+    fn repr(&self) -> &'static str {
+        match self {
+            Object::Creature => "creature",
+            Object::Card => "card",
+            Object::Permanent => "permanent",
+        }
+    }
+    fn iter() -> impl Iterator<Item = Self> {
+        [Object::Creature, Object::Card, Object::Permanent].into_iter()
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ObjectReference {

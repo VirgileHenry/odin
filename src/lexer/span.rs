@@ -1,6 +1,6 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Span<'source> {
+pub struct Span<'src> {
     pub start: usize,
     pub length: usize,
-    pub text: &'source str,
+    pub text: &'src str,
 }
