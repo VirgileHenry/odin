@@ -1,3 +1,6 @@
 [submodule "deps/mtg-data"]
 	path = deps/mtg-data
 	url = https://github.com/VirgileHenry/mtg-data
+[submodule "deps/krark"]
+	path = deps/krark
+	url = git@github.com:VirgileHenry/krark.git
