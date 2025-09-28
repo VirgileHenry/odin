@@ -6,7 +6,6 @@ To do so, the elements AbilityTree implements TryFromStr, which calls the lexer 
 ALternatively, there is the lex and parse functions that allows lexing and parsing.
 */
 
-pub mod ability_display;
 pub mod ability_tree;
 pub mod error;
 pub mod lexer;

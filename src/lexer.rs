@@ -2,7 +2,6 @@ mod error;
 pub mod span;
 pub mod tokens;
 
-const DELIMITERS: [char; 2] = ['(', ')'];
 const DISCARDABLE_PREFIX: [char; 1] = [' '];
 
 pub use error::LexerError;
@@ -14,7 +13,7 @@ pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::Le
     let mut result = Vec::new();
 
     loop {
-        let (stripped, consumed) = strip_prefixes(source)?;
+        let (stripped, consumed) = strip_prefixes(source);
         source = stripped;
         offset += consumed;
 
@@ -40,6 +39,17 @@ pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::Le
     }
 }
 
-fn strip_prefixes<'src>(source: &'src str) -> Result<(&'src str, usize), error::LexerError<'src>> {
-    unimplemented!()
+fn strip_prefixes<'src>(source: &'src str) -> (&'src str, usize) {
+    let mut consumed = 0;
+    let mut chars_indices = source.char_indices();
+
+    while let Some((char_index, char_val)) = chars_indices.next() {
+        if DISCARDABLE_PREFIX.contains(&char_val) {
+            consumed = char_index;
+        } else {
+            break; /* stop on the first non discardable prefix */
+        }
+    }
+
+    (&source[consumed..], consumed)
 }

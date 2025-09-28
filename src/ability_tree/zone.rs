@@ -17,7 +17,7 @@ impl std::fmt::Display for Zone {
     }
 }
 
-impl crate::ability_tree::terminals::Terminal for Zone {
+impl crate::ability_tree::terminals::KeywordTerminal for Zone {
     fn repr(&self) -> &'static str {
         match self {
             Zone::Graveyard => "graveyard",

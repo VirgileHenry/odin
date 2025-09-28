@@ -1,6 +1,13 @@
 pub trait Terminal: std::fmt::Display + Sized {
+    fn try_from_str(source: &str) -> Option<(Self, usize)>;
+}
+
+pub trait KeywordTerminal {
     fn repr(&self) -> &'static str;
     fn iter() -> impl Iterator<Item = Self>;
+}
+
+impl<T: KeywordTerminal + std::fmt::Display> Terminal for T {
     fn try_from_str(source: &str) -> Option<(Self, usize)> {
         for item in Self::iter() {
             if source.starts_with(item.repr()) {
@@ -28,16 +35,21 @@ impl std::fmt::Display for Number {
 }
 
 impl Terminal for Number {
-    fn repr(&self) -> &'static str {
-        unreachable!("repr() shall not be used for the \"Number\" terminal!");
-    }
-    fn iter() -> impl Iterator<Item = Self> {
-        fn inner() -> std::iter::Empty<Number> {
-            unreachable!("iter() shall not be used for the \"Number\" terminal!");
+    fn try_from_str(source: &str) -> Option<(Self, usize)> {
+        const DECIMALS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        if source.starts_with("a") {
+            Some((Number::A, "a".len()))
+        } else if source.starts_with(&DECIMALS) {
+            let mut decimal_count = 1;
+            while decimal_count < source.len() && source[decimal_count..].starts_with(&DECIMALS) {
+                decimal_count += 1;
+            }
+            let num: i32 = source[0..decimal_count].parse().ok()?;
+            Some((Number::Number(num), decimal_count))
+        } else {
+            None
         }
-        inner()
     }
-    fn try_from_str(source: &str) -> Option<(Self, usize)> {}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -53,7 +65,16 @@ impl std::fmt::Display for Counter {
     }
 }
 
-impl Terminal for Counter {}
+impl KeywordTerminal for Counter {
+    fn repr(&self) -> &'static str {
+        match self {
+            Counter::PlusOne => "+1/+1",
+        }
+    }
+    fn iter() -> impl Iterator<Item = Self> {
+        [Counter::PlusOne].into_iter()
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CountSpecifier {
@@ -72,7 +93,31 @@ impl std::fmt::Display for CountSpecifier {
     }
 }
 
-impl Terminal for CountSpecifier {}
+impl Terminal for CountSpecifier {
+    fn try_from_str(source: &str) -> Option<(Self, usize)> {
+        if source.starts_with("each") {
+            Some((CountSpecifier::Each, "each".len()))
+        } else if source.starts_with("target") {
+            Some((CountSpecifier::Target, "target".len()))
+        } else if source.starts_with("up to ") {
+            const DECIMALS: [char; 10] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            let source = &source["up to ".len()..];
+            if source.starts_with(&DECIMALS) {
+                let mut decimal_count = 1;
+                while decimal_count < source.len() && source[decimal_count..].starts_with(&DECIMALS)
+                {
+                    decimal_count += 1;
+                }
+                let num: usize = source[0..decimal_count].parse().ok()?;
+                Some((CountSpecifier::UpTo(num), "up to ".len() + decimal_count))
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum ControlSpecifier {
@@ -89,12 +134,25 @@ impl std::fmt::Display for ControlSpecifier {
     }
 }
 
-impl Terminal for ControlSpecifier {}
+impl KeywordTerminal for ControlSpecifier {
+    fn repr(&self) -> &'static str {
+        match self {
+            ControlSpecifier::YouControl => "you control",
+            ControlSpecifier::YouDontControl => "you don't control",
+        }
+    }
+    fn iter() -> impl Iterator<Item = Self> {
+        [
+            ControlSpecifier::YouControl,
+            ControlSpecifier::YouDontControl,
+        ]
+        .into_iter()
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Appartenance {
     Your,
-    AnyPlayer,
     AnOpponent,
 }
 
@@ -102,13 +160,22 @@ impl std::fmt::Display for Appartenance {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Appartenance::Your => write!(f, "Your"),
-            Appartenance::AnyPlayer => write!(f, "Any Player's"),
             Appartenance::AnOpponent => write!(f, "An Opponent's"),
         }
     }
 }
 
-impl Terminal for Appartenance {}
+impl KeywordTerminal for Appartenance {
+    fn repr(&self) -> &'static str {
+        match self {
+            Appartenance::Your => "your",
+            Appartenance::AnOpponent => "an opponent",
+        }
+    }
+    fn iter() -> impl Iterator<Item = Self> {
+        [Appartenance::Your, Appartenance::AnOpponent].into_iter()
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Actions {
@@ -125,4 +192,14 @@ impl std::fmt::Display for Actions {
     }
 }
 
-impl Terminal for Actions {}
+impl KeywordTerminal for Actions {
+    fn repr(&self) -> &'static str {
+        match self {
+            Actions::Dies => "dies",
+            Actions::Attacks => "attacks",
+        }
+    }
+    fn iter() -> impl Iterator<Item = Self> {
+        [Actions::Dies, Actions::Attacks].into_iter()
+    }
+}

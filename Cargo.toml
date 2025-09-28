@@ -6,4 +6,10 @@ edition = "2021"
 [dependencies]
 mtg-data = { path = "deps/mtg-data" }
 
-[features]
+[dev-dependencies]
+krark = { path = "deps/krark" }
+
+[[test]]
+name = "lexer"
+path = "tests/lexer.rs"
+harness = false

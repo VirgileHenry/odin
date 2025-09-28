@@ -15,7 +15,7 @@ impl std::fmt::Display for Object {
     }
 }
 
-impl crate::ability_tree::terminals::Terminal for Object {
+impl crate::ability_tree::terminals::KeywordTerminal for Object {
     fn repr(&self) -> &'static str {
         match self {
             Object::Creature => "creature",

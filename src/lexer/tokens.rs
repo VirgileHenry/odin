@@ -1,7 +1,7 @@
 use crate::ability_tree::terminals;
 use crate::ability_tree::terminals::Terminal;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Token<'src> {
     kind: TokenKind,
     span: crate::lexer::span::Span<'src>,
@@ -49,7 +49,7 @@ impl<'src> Token<'src> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenKind {
     Number(terminals::Number),
     Counter(terminals::Counter),
@@ -60,7 +60,7 @@ pub enum TokenKind {
     ControlFlow(ControlFlowToken),
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ControlFlowToken {
     NewLine,
     Comma,
@@ -76,7 +76,7 @@ impl ControlFlowToken {
             Some(',') => Some((ControlFlowToken::Comma, 1)),
             Some('.') => Some((ControlFlowToken::Dot, 1)),
             Some(':') => Some((ControlFlowToken::Colons, 1)),
-            None => Some((ControlFlowToken::EndOfInput, 1)),
+            None => Some((ControlFlowToken::EndOfInput, 0)),
             _ => None,
         }
     }

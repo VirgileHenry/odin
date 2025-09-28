@@ -1,5 +1,5 @@
 /// Errors that can be thrown by the lexer.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LexerError<'src> {
     UnclosedCommentBlock {
         span: crate::lexer::span::Span<'src>,
