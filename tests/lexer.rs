@@ -2,7 +2,7 @@ use krark::*;
 use odin::*;
 
 fn main() -> Result<(), String> {
-    let mut krark_harness = KrarkHarness::new("Lexer full tests".to_string());
+    let mut krark_harness = KrarkHarness::new("Lexer test: all cards".to_string());
     krark_harness.run(|card, mut results| {
         match card.oracle_text {
             Some(text) => {
