@@ -17,17 +17,15 @@ impl std::fmt::Display for Zone {
     }
 }
 
-impl crate::ability_tree::terminals::KeywordTerminal for Zone {
-    fn repr(&self) -> &'static str {
-        match self {
-            Zone::Graveyard => "graveyard",
-            Zone::Library => "library",
-            Zone::Hand => "hand",
-            Zone::Exile => "exile",
+impl crate::ability_tree::terminals::Terminal for Zone {
+    fn try_from_str(source: &str) -> Option<Self> {
+        match source {
+            "graveyard" => Some(Zone::Graveyard),
+            "library" => Some(Zone::Library),
+            "hand" => Some(Zone::Hand),
+            "exile" => Some(Zone::Exile),
+            _ => None,
         }
-    }
-    fn iter() -> impl Iterator<Item = Self> {
-        [Zone::Graveyard, Zone::Library, Zone::Hand, Zone::Exile].into_iter()
     }
 }
 

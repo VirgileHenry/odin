@@ -15,16 +15,14 @@ impl std::fmt::Display for Object {
     }
 }
 
-impl crate::ability_tree::terminals::KeywordTerminal for Object {
-    fn repr(&self) -> &'static str {
-        match self {
-            Object::Creature => "creature",
-            Object::Card => "card",
-            Object::Permanent => "permanent",
+impl crate::ability_tree::terminals::Terminal for Object {
+    fn try_from_str(source: &str) -> Option<Self> {
+        match source {
+            "creature" => Some(Object::Creature),
+            "card" => Some(Object::Card),
+            "permanent" => Some(Object::Permanent),
+            _ => None,
         }
-    }
-    fn iter() -> impl Iterator<Item = Self> {
-        [Object::Creature, Object::Card, Object::Permanent].into_iter()
     }
 }
 

@@ -1,0 +1,17 @@
+[build]
+# Always use mold as the linker
+rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+
+[profile.dev]
+incremental = true
+codegen-units = 16
+debug = 1
+
+[profile.test]
+incremental = true
+codegen-units = 16
+debug = 1
+
+[profile.release]
+incremental = false
+codegen-units = 1   # maximize optimizations in release builds

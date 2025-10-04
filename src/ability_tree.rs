@@ -51,7 +51,7 @@ pub fn example() -> AbilityTree {
             ability::triggered::TriggeredAbility {
                 condition: ability::triggered::trigger_cond::TriggerCondition::ObjectDoesAction {
                     object: object::ObjectReference::SelfReferencing,
-                    action: terminals::Actions::Dies,
+                    action: terminals::CardActions::Dies,
                 },
                 effect: statement::Statement::Imperative(imperative::Imperative::Put {
                     amount: terminals::Number::A,

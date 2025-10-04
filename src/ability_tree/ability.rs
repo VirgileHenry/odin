@@ -1,10 +1,12 @@
 pub mod activated;
+pub mod keyword;
 pub mod spell;
 pub mod statik;
 pub mod triggered;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Ability {
+    Keyword(keyword::KeywordAbility),
     Activated(activated::ActivatedAbility),
     Spell(spell::SpellAbility),
     Static(statik::StaticAbility),
@@ -21,6 +23,7 @@ impl crate::ability_tree::AbilityTreeImpl for Ability {
             Ability::Spell(spell) => spell.display(out)?,
             Ability::Static(statik) => statik.display(out)?,
             Ability::Triggered(triggered) => triggered.display(out)?,
+            Ability::Keyword(keyword) => keyword.display(out)?,
         }
         Ok(())
     }

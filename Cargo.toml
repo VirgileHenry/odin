@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 mtg-data = { path = "deps/mtg-data" }
+regex = "1.11.3"
 
 [dev-dependencies]
 krark = { path = "deps/krark" }

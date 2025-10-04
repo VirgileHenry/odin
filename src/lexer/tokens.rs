@@ -1,5 +1,20 @@
+mod non_terminals;
+
 use crate::ability_tree::terminals;
 use crate::ability_tree::terminals::Terminal;
+use crate::lexer::span::Span;
+
+fn gen_parse_func<T, F>(func: F) -> impl for<'src> Fn(Span<'src>) -> Option<Token<'src>>
+where
+    T: Into<TokenKind>,
+    F: Fn(&str) -> Option<T>,
+{
+    return move |span| {
+        let token: T = func(span.text)?;
+        let kind: TokenKind = token.into();
+        Some(Token { kind, span })
+    };
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Token<'src> {
@@ -8,44 +23,27 @@ pub struct Token<'src> {
 }
 
 impl<'src> Token<'src> {
-    pub fn try_from_str(source: &'src str, offset: usize) -> Option<(Token<'src>, usize)> {
-        let (kind, length) = {
-            if let Some((kind, length)) = terminals::Number::try_from_str(source) {
-                Some((TokenKind::Number(kind), length))
-            } else if let Some((kind, length)) = terminals::Counter::try_from_str(source) {
-                Some((TokenKind::Counter(kind), length))
-            } else if let Some((kind, length)) = terminals::CountSpecifier::try_from_str(source) {
-                Some((TokenKind::CountSpecifier(kind), length))
-            } else if let Some((kind, length)) = terminals::ControlSpecifier::try_from_str(source) {
-                Some((TokenKind::ControlSpecifier(kind), length))
-            } else if let Some((kind, length)) = terminals::Appartenance::try_from_str(source) {
-                Some((TokenKind::Appartenance(kind), length))
-            } else if let Some((kind, length)) = terminals::Actions::try_from_str(source) {
-                Some((TokenKind::Actions(kind), length))
-            } else if let Some((kind, length)) = ControlFlowToken::try_from_str(source) {
-                Some((TokenKind::ControlFlow(kind), length))
-            } else {
-                None
-            }
-        }?;
-        Some((
-            Token {
-                kind,
-                span: crate::lexer::span::Span {
-                    start: offset,
-                    length,
-                    text: &source[0..length],
-                },
-            },
-            length,
-        ))
-    }
+    pub fn try_from_str(span: Span<'src>) -> Option<Token<'src>> {
+        let parse_funcs: &[&dyn Fn(Span<'src>) -> Option<Token<'src>>] = &[
+            &gen_parse_func(terminals::Number::try_from_str),
+            &gen_parse_func(terminals::Number::try_from_str),
+            &gen_parse_func(terminals::Counter::try_from_str),
+            &gen_parse_func(terminals::CountSpecifier::try_from_str),
+            &gen_parse_func(terminals::ControlSpecifier::try_from_str),
+            &gen_parse_func(terminals::Appartenance::try_from_str),
+            &gen_parse_func(terminals::CardActions::try_from_str),
+            &gen_parse_func(mtg_data::KeywordAbility::try_from_str),
+            &gen_parse_func(non_terminals::ControlFlowToken::try_from_str),
+            &gen_parse_func(non_terminals::TriggerAbilityMarker::try_from_str),
+        ];
 
-    pub fn is_eof(&self) -> bool {
-        match self.kind {
-            TokenKind::ControlFlow(ControlFlowToken::EndOfInput) => true,
-            _ => false,
+        for parse_func in parse_funcs.into_iter() {
+            match parse_func(span) {
+                Some(res) => return Some(res),
+                _ => {}
+            }
         }
+        None
     }
 }
 
@@ -56,28 +54,30 @@ pub enum TokenKind {
     CountSpecifier(terminals::CountSpecifier),
     ControlSpecifier(terminals::ControlSpecifier),
     Appartenance(terminals::Appartenance),
-    Actions(terminals::Actions),
-    ControlFlow(ControlFlowToken),
+    CardActions(terminals::CardActions),
+    PlayerActions(terminals::PlayerActions),
+    KeywordAbility(mtg_data::KeywordAbility),
+    ControlFlowToken(non_terminals::ControlFlowToken),
+    TriggerAbilityMarker(non_terminals::TriggerAbilityMarker),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ControlFlowToken {
-    NewLine,
-    Comma,
-    Dot,
-    Colons,
-    EndOfInput,
-}
-
-impl ControlFlowToken {
-    fn try_from_str(source: &str) -> Option<(Self, usize)> {
-        match source.chars().next() {
-            Some('\n') => Some((ControlFlowToken::NewLine, 1)),
-            Some(',') => Some((ControlFlowToken::Comma, 1)),
-            Some('.') => Some((ControlFlowToken::Dot, 1)),
-            Some(':') => Some((ControlFlowToken::Colons, 1)),
-            None => Some((ControlFlowToken::EndOfInput, 0)),
-            _ => None,
+macro_rules! impl_into_token_kind {
+    ($ty:path, $variant:tt) => {
+        impl Into<TokenKind> for $ty {
+            fn into(self) -> TokenKind {
+                TokenKind::$variant(self)
+            }
         }
-    }
+    };
 }
+
+impl_into_token_kind!(terminals::Number, Number);
+impl_into_token_kind!(terminals::Counter, Counter);
+impl_into_token_kind!(terminals::CountSpecifier, CountSpecifier);
+impl_into_token_kind!(terminals::ControlSpecifier, ControlSpecifier);
+impl_into_token_kind!(terminals::Appartenance, Appartenance);
+impl_into_token_kind!(terminals::CardActions, CardActions);
+impl_into_token_kind!(terminals::PlayerActions, PlayerActions);
+impl_into_token_kind!(mtg_data::KeywordAbility, KeywordAbility);
+impl_into_token_kind!(non_terminals::ControlFlowToken, ControlFlowToken);
+impl_into_token_kind!(non_terminals::TriggerAbilityMarker, TriggerAbilityMarker);
