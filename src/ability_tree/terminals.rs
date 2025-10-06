@@ -6,7 +6,6 @@ pub trait Terminal: std::fmt::Display + Sized {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Number {
-    A,
     Number(i32),
     X,
 }
@@ -14,7 +13,6 @@ pub enum Number {
 impl std::fmt::Display for Number {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Number::A => write!(f, "a"),
             Number::X => write!(f, "x"),
             Number::Number(num) => write!(f, "{num}"),
         }
@@ -24,8 +22,14 @@ impl std::fmt::Display for Number {
 impl Terminal for Number {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "a" => Some(Number::A),
             "x" => Some(Number::X),
+            "a" => Some(Number::Number(1)),
+            "one" => Some(Number::Number(1)),
+            "two" => Some(Number::Number(2)),
+            "three" => Some(Number::Number(3)),
+            "four" => Some(Number::Number(4)),
+            "five" => Some(Number::Number(5)),
+            "six" => Some(Number::Number(6)),
             other => {
                 let num = other.parse().ok()?;
                 Some(Number::Number(num))
@@ -58,7 +62,7 @@ impl Terminal for Counter {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CountSpecifier {
-    Each,
+    All,
     Target,
     UpTo(usize),
 }
@@ -66,7 +70,7 @@ pub enum CountSpecifier {
 impl std::fmt::Display for CountSpecifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CountSpecifier::Each => write!(f, "each"),
+            CountSpecifier::All => write!(f, "all"),
             CountSpecifier::Target => write!(f, "target"),
             CountSpecifier::UpTo(amount) => write!(f, "up to {amount}"),
         }
@@ -76,7 +80,8 @@ impl std::fmt::Display for CountSpecifier {
 impl Terminal for CountSpecifier {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "each" => Some(CountSpecifier::Each),
+            "all" => Some(CountSpecifier::All),
+            "each" => Some(CountSpecifier::All),
             "target" => Some(CountSpecifier::Target),
             other => {
                 let prefix = "up to ";
@@ -144,15 +149,17 @@ impl Terminal for Appartenance {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CardActions {
-    Dies,
     Attacks,
+    Enters,
+    Dies,
 }
 
 impl std::fmt::Display for CardActions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CardActions::Dies => write!(f, "dies"),
             CardActions::Attacks => write!(f, "attacks"),
+            CardActions::Dies => write!(f, "dies"),
+            CardActions::Enters => write!(f, "enters"),
         }
     }
 }
@@ -160,8 +167,9 @@ impl std::fmt::Display for CardActions {
 impl Terminal for CardActions {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "dies" => Some(CardActions::Dies),
             "attacks" => Some(CardActions::Attacks),
+            "dies" => Some(CardActions::Dies),
+            "enters" => Some(CardActions::Enters),
             _ => None,
         }
     }
@@ -169,23 +177,35 @@ impl Terminal for CardActions {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum PlayerActions {
-    Exile,
+    Add,
+    Attack,
     Cast,
-    Play,
-    Attacks,
-    Scry,
+    Choose,
+    Create,
+    Destroy,
     Draw,
+    Exile,
+    Pay,
+    Play,
+    Scry,
+    Search,
 }
 
 impl std::fmt::Display for PlayerActions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PlayerActions::Attacks => write!(f, "attacks"),
+            PlayerActions::Add => write!(f, "add"),
+            PlayerActions::Attack => write!(f, "attack"),
             PlayerActions::Cast => write!(f, "cast"),
+            PlayerActions::Choose => write!(f, "choose"),
+            PlayerActions::Create => write!(f, "create"),
+            PlayerActions::Destroy => write!(f, "destroy"),
             PlayerActions::Draw => write!(f, "draw"),
             PlayerActions::Exile => write!(f, "exile"),
+            PlayerActions::Pay => write!(f, "pay"),
             PlayerActions::Play => write!(f, "play"),
             PlayerActions::Scry => write!(f, "scry"),
+            PlayerActions::Search => write!(f, "search"),
         }
     }
 }
@@ -193,12 +213,18 @@ impl std::fmt::Display for PlayerActions {
 impl Terminal for PlayerActions {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "attacks" => Some(PlayerActions::Attacks),
+            "add" => Some(PlayerActions::Add),
+            "attack" => Some(PlayerActions::Attack),
             "cast" => Some(PlayerActions::Cast),
+            "choose" => Some(PlayerActions::Choose),
+            "create" => Some(PlayerActions::Create),
+            "destroy" => Some(PlayerActions::Destroy),
             "draw" => Some(PlayerActions::Draw),
             "exile" => Some(PlayerActions::Exile),
+            "pay" => Some(PlayerActions::Pay),
             "play" => Some(PlayerActions::Play),
             "scry" => Some(PlayerActions::Scry),
+            "search" => Some(PlayerActions::Search),
             _ => None,
         }
     }
@@ -241,5 +267,11 @@ impl Terminal for PlayerSpecifier {
 impl Terminal for mtg_data::KeywordAbility {
     fn try_from_str(source: &str) -> Option<Self> {
         mtg_data::KeywordAbility::from_str(source).ok()
+    }
+}
+
+impl Terminal for mtg_data::Mana {
+    fn try_from_str(source: &str) -> Option<Self> {
+        mtg_data::Mana::from_str(source).ok()
     }
 }

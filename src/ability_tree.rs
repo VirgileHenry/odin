@@ -33,6 +33,7 @@ impl AbilityTree {
             ability.display(&mut tree_formatter)?;
             tree_formatter.pop_branch();
         }
+        writeln!(tree_formatter, "")?; /* newline */
 
         Ok(())
     }
@@ -54,10 +55,10 @@ pub fn example() -> AbilityTree {
                     action: terminals::CardActions::Dies,
                 },
                 effect: statement::Statement::Imperative(imperative::Imperative::Put {
-                    amount: terminals::Number::A,
+                    amount: terminals::Number::Number(1),
                     of: terminals::Counter::PlusOne,
                     on: object::ObjectReference::SpecifiedObj {
-                        amount: terminals::CountSpecifier::Each,
+                        amount: terminals::CountSpecifier::All,
                         object: object::Object::Creature,
                         specifiers: vec![
                             object::ObjectSpecifier::Control(

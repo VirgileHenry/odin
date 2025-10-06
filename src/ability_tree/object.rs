@@ -1,16 +1,20 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Object {
-    Creature,
     Card,
+    Creature,
+    Land,
     Permanent,
+    Spell,
 }
 
 impl std::fmt::Display for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Object::Creature => write!(f, "Creature"),
-            Object::Card => write!(f, "Card"),
-            Object::Permanent => write!(f, "Permanent"),
+            Object::Card => write!(f, "card"),
+            Object::Creature => write!(f, "creature"),
+            Object::Land => write!(f, "land"),
+            Object::Permanent => write!(f, "permanent"),
+            Object::Spell => write!(f, "spell"),
         }
     }
 }
@@ -18,9 +22,16 @@ impl std::fmt::Display for Object {
 impl crate::ability_tree::terminals::Terminal for Object {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "creature" => Some(Object::Creature),
             "card" => Some(Object::Card),
+            "cards" => Some(Object::Card),
+            "creature" => Some(Object::Creature),
+            "creatures" => Some(Object::Creature),
+            "land" => Some(Object::Land),
+            "lands" => Some(Object::Land),
             "permanent" => Some(Object::Permanent),
+            "permanents" => Some(Object::Permanent),
+            "spell" => Some(Object::Spell),
+            "spells" => Some(Object::Spell),
             _ => None,
         }
     }

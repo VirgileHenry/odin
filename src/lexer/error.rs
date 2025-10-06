@@ -40,3 +40,5 @@ impl<'src> std::fmt::Display for LexerError<'src> {
         Ok(())
     }
 }
+
+impl<'src> std::error::Error for LexerError<'src> {}
