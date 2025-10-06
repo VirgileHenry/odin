@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tree.display(&mut stdout).unwrap();
 
     let krenko_name = "Krenko, Mob Boss";
-    let krenko_text = "{T}: Create X 1/1 red Goblin creature tokens, where X is the number of Goblins you control.";
+    let krenko_text = "+2/+1";
 
     let preprocessed = lexer::preprocess(krenko_name, krenko_text);
     let tokens = lexer::lex(&preprocessed);

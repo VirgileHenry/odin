@@ -47,7 +47,8 @@ fn remove_parens<I: Iterator<Item = char>>(chars: &mut I) {
 /// Create a vec of Terminals from a string. Can fail, and will return an error if it does.
 pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::LexerError<'src>> {
     /* List of non words token we also want to match */
-    const MATCHABLE_NON_WORDS: &[&'static str] = &["\\.", ",", "'", "{", "}", "~", "\\/", ":"];
+    const MATCHABLE_NON_WORDS: &[&'static str] =
+        &["\\.", ",", "'", "{", "}", "~", "\\/", ":", "+", "\\-"];
 
     let matchable_non_words: String = MATCHABLE_NON_WORDS.iter().cloned().collect();
     let raw_token_pattern = format!("(\\b\\w+\\b)|([{}])", matchable_non_words);
@@ -57,7 +58,7 @@ pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::Le
 
     let mut result = Vec::new();
 
-    while !raw_tokens.is_empty() {
+    'outer: while !raw_tokens.is_empty() {
         /* Attempt to parse as much tokens as possible, reducing by one each time */
         for token_count in (0..raw_tokens.len()).rev() {
             let start = raw_tokens[0].start();
@@ -70,7 +71,7 @@ pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::Le
             if let Some(token) = tokens::Token::try_from_str(span) {
                 raw_tokens.drain(0..token_count + 1);
                 result.push(token);
-                continue;
+                continue 'outer;
             }
         }
         /* Failed to parse at all, stop the loop */

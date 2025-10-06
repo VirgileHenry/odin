@@ -33,15 +33,31 @@ impl<'src> Token<'src> {
             &gen_parse_func(terminals::CardActions::try_from_str),
             &gen_parse_func(terminals::PlayerActions::try_from_str),
             &gen_parse_func(terminals::PlayerSpecifier::try_from_str),
+            &gen_parse_func(terminals::PermanentProperty::try_from_str),
+            &gen_parse_func(terminals::SpellProperty::try_from_str),
+            &gen_parse_func(terminals::PowerToughness::try_from_str),
+            &gen_parse_func(terminals::PowerToughnessModifier::try_from_str),
             &gen_parse_func(object::Object::try_from_str),
             &gen_parse_func(zone::Zone::try_from_str),
+            &gen_parse_func(mtg_data::Color::try_from_str),
             &gen_parse_func(mtg_data::KeywordAbility::try_from_str),
             &gen_parse_func(mtg_data::Mana::try_from_str),
+            &gen_parse_func(mtg_data::CardType::try_from_str),
+            &gen_parse_func(mtg_data::CreatureType::try_from_str),
+            &gen_parse_func(mtg_data::EnchantmentType::try_from_str),
+            &gen_parse_func(mtg_data::LandType::try_from_str),
+            &gen_parse_func(mtg_data::PlaneswalkerType::try_from_str),
+            &gen_parse_func(mtg_data::BattleType::try_from_str),
+            &gen_parse_func(mtg_data::ArtifactType::try_from_str),
+            &gen_parse_func(mtg_data::SpellType::try_from_str),
+            &gen_parse_func(mtg_data::Supertype::try_from_str),
             &gen_parse_func(non_terminals::ControlFlowToken::try_from_str),
             &gen_parse_func(non_terminals::TriggerAbilityMarker::try_from_str),
             &gen_parse_func(non_terminals::TapUntapCost::try_from_str),
             &gen_parse_func(non_terminals::EnglishKeywords::try_from_str),
             &gen_parse_func(non_terminals::SelfReferencing::try_from_str),
+            &gen_parse_func(non_terminals::ActionKeywords::try_from_str),
+            &gen_parse_func(non_terminals::VhyToSortLater::try_from_str),
         ];
 
         for parse_func in parse_funcs.into_iter() {
@@ -63,15 +79,31 @@ pub enum TokenKind {
     CardActions(terminals::CardActions),
     PlayerActions(terminals::PlayerActions),
     PlayerSpecifier(terminals::PlayerSpecifier),
+    PermanentProperty(terminals::PermanentProperty),
+    SpellProperty(terminals::SpellProperty),
+    PowerToughness(terminals::PowerToughness),
+    PowerToughnessModifier(terminals::PowerToughnessModifier),
     Object(object::Object),
     Zone(zone::Zone),
+    Color(mtg_data::Color),
     KeywordAbility(mtg_data::KeywordAbility),
-    ManaCost(mtg_data::Mana),
+    Mana(mtg_data::Mana),
+    CardType(mtg_data::CardType),
+    CreatureType(mtg_data::CreatureType),
+    EnchantmentType(mtg_data::EnchantmentType),
+    LandType(mtg_data::LandType),
+    PlaneswalkerType(mtg_data::PlaneswalkerType),
+    BattleType(mtg_data::BattleType),
+    ArtifactType(mtg_data::ArtifactType),
+    SpellType(mtg_data::SpellType),
+    Supertype(mtg_data::Supertype),
     ControlFlowToken(non_terminals::ControlFlowToken),
     TriggerAbilityMarker(non_terminals::TriggerAbilityMarker),
     TapUntapCost(non_terminals::TapUntapCost),
     EnglishKeywords(non_terminals::EnglishKeywords),
     SelfReferencing(non_terminals::SelfReferencing),
+    ActionKeywords(non_terminals::ActionKeywords),
+    VhyToSortLater(non_terminals::VhyToSortLater),
 }
 
 macro_rules! impl_into_token_kind {
@@ -92,12 +124,28 @@ impl_into_token_kind!(terminals::Appartenance, Appartenance);
 impl_into_token_kind!(terminals::CardActions, CardActions);
 impl_into_token_kind!(terminals::PlayerActions, PlayerActions);
 impl_into_token_kind!(terminals::PlayerSpecifier, PlayerSpecifier);
+impl_into_token_kind!(terminals::PermanentProperty, PermanentProperty);
+impl_into_token_kind!(terminals::SpellProperty, SpellProperty);
+impl_into_token_kind!(terminals::PowerToughness, PowerToughness);
+impl_into_token_kind!(terminals::PowerToughnessModifier, PowerToughnessModifier);
 impl_into_token_kind!(object::Object, Object);
 impl_into_token_kind!(zone::Zone, Zone);
+impl_into_token_kind!(mtg_data::Color, Color);
 impl_into_token_kind!(mtg_data::KeywordAbility, KeywordAbility);
-impl_into_token_kind!(mtg_data::Mana, ManaCost);
+impl_into_token_kind!(mtg_data::Mana, Mana);
+impl_into_token_kind!(mtg_data::CardType, CardType);
+impl_into_token_kind!(mtg_data::CreatureType, CreatureType);
+impl_into_token_kind!(mtg_data::EnchantmentType, EnchantmentType);
+impl_into_token_kind!(mtg_data::LandType, LandType);
+impl_into_token_kind!(mtg_data::PlaneswalkerType, PlaneswalkerType);
+impl_into_token_kind!(mtg_data::BattleType, BattleType);
+impl_into_token_kind!(mtg_data::ArtifactType, ArtifactType);
+impl_into_token_kind!(mtg_data::SpellType, SpellType);
+impl_into_token_kind!(mtg_data::Supertype, Supertype);
 impl_into_token_kind!(non_terminals::ControlFlowToken, ControlFlowToken);
 impl_into_token_kind!(non_terminals::TriggerAbilityMarker, TriggerAbilityMarker);
 impl_into_token_kind!(non_terminals::TapUntapCost, TapUntapCost);
 impl_into_token_kind!(non_terminals::EnglishKeywords, EnglishKeywords);
 impl_into_token_kind!(non_terminals::SelfReferencing, SelfReferencing);
+impl_into_token_kind!(non_terminals::ActionKeywords, ActionKeywords);
+impl_into_token_kind!(non_terminals::VhyToSortLater, VhyToSortLater);
