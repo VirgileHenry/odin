@@ -47,41 +47,46 @@ fn remove_parens<I: Iterator<Item = char>>(chars: &mut I) {
 /// Create a vec of Terminals from a string. Can fail, and will return an error if it does.
 pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::LexerError<'src>> {
     /* List of non words token we also want to match */
-    const MATCHABLE_NON_WORDS: &[&'static str] = &["\\.", ",", "'", "{", "}", "~", "\\/"];
+    const MATCHABLE_NON_WORDS: &[&'static str] = &["\\.", ",", "'", "{", "}", "~", "\\/", ":"];
 
     let matchable_non_words: String = MATCHABLE_NON_WORDS.iter().cloned().collect();
     let raw_token_pattern = format!("(\\b\\w+\\b)|([{}])", matchable_non_words);
     let raw_token_regex = regex::Regex::new(&raw_token_pattern).expect("Failed to compile regex!");
 
-    let mut raw_tokens = raw_token_regex.find_iter(input);
-    let mut previous_raw_token: Option<span::Span> = None;
+    let mut raw_tokens: std::collections::VecDeque<_> = raw_token_regex.find_iter(input).collect();
 
     let mut result = Vec::new();
 
-    while let Some(next) = raw_tokens.next() {
-        let span = match previous_raw_token {
-            None => span::Span {
-                start: next.start(),
-                length: next.len(),
-                text: next.as_str(),
-            },
-            Some(prev) => span::Span {
-                start: prev.start,
-                length: next.end() - prev.start,
-                text: &input[prev.start..next.end()],
-            },
-        };
-        match tokens::Token::try_from_str(span) {
-            Some(token) => {
+    while !raw_tokens.is_empty() {
+        /* Attempt to parse as much tokens as possible, reducing by one each time */
+        for token_count in (0..raw_tokens.len()).rev() {
+            let start = raw_tokens[0].start();
+            let end = raw_tokens[token_count].end();
+            let span = span::Span {
+                start,
+                length: end - start,
+                text: &input[start..end],
+            };
+            if let Some(token) = tokens::Token::try_from_str(span) {
+                raw_tokens.drain(0..token_count + 1);
                 result.push(token);
-                previous_raw_token = None;
+                continue;
             }
-            None => previous_raw_token = Some(span),
         }
+        /* Failed to parse at all, stop the loop */
+        break;
     }
 
-    match previous_raw_token {
-        None => Ok(result),
-        Some(prev) => Err(error::LexerError::NoTokenMatch { span: prev }),
+    if raw_tokens.is_empty() {
+        Ok(result)
+    } else {
+        let start = raw_tokens[0].start();
+        let end = raw_tokens[raw_tokens.len() - 1].end();
+        let span = span::Span {
+            start,
+            length: end - start,
+            text: &input[start..end],
+        };
+        Err(error::LexerError::NoTokenMatch { span })
     }
 }
