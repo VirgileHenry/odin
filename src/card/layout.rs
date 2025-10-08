@@ -1,0 +1,28 @@
+/// All the layouts of Magic: The Gathering cards, as described [here](https://scryfall.com/docs/api/layouts).
+/// With each layout, this enum also contains the layout related data, which is most of the card data.
+pub enum Layout {
+    Normal {},
+    Split {},
+    Flip {},
+    Transform {},
+    ModelDfc {},
+    Meld {},
+    Leveler {},
+    Class {},
+    Case {},
+    Saga {},
+    Adventure {},
+    Mutate {},
+    Prototype {},
+    Battle {},
+    Planar {},
+    Scheme {},
+    Vanguard {},
+    Token {},
+    DoubleFaced {},
+    Emblem {},
+    Augment {},
+    Host {},
+    ArtSeries {},
+    ReversibleCard {},
+}

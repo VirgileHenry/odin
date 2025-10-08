@@ -1,0 +1,23 @@
+/// For each format in [mtg_data::Format], the associated [mtg_data::Legality].
+pub struct Legalities {
+    pub alchemy: mtg_data::Legality,
+    pub brawl: mtg_data::Legality,
+    pub commander: mtg_data::Legality,
+    pub duel: mtg_data::Legality,
+    pub explorer: mtg_data::Legality,
+    pub future: mtg_data::Legality,
+    pub gladiator: mtg_data::Legality,
+    pub historic: mtg_data::Legality,
+    pub historicbrawl: mtg_data::Legality,
+    pub legacy: mtg_data::Legality,
+    pub modern: mtg_data::Legality,
+    pub oathbreaker: mtg_data::Legality,
+    pub pauper: mtg_data::Legality,
+    pub pauper_commander: mtg_data::Legality,
+    pub penny: mtg_data::Legality,
+    pub pionner: mtg_data::Legality,
+    pub predh: mtg_data::Legality,
+    pub premodern: mtg_data::Legality,
+    pub standard: mtg_data::Legality,
+    pub vintage: mtg_data::Legality,
+}

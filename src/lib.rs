@@ -7,6 +7,7 @@ ALternatively, there is the lex and parse functions that allows lexing and parsi
 */
 
 pub mod ability_tree;
+pub mod card;
 pub mod error;
 pub mod lexer;
 pub mod utils;

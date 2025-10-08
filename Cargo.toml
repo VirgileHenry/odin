@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+arrayvec = "0.7.6"
 mtg-data = { path = "deps/mtg-data" }
 regex = "1.11.3"
+uuid = "1.18.1"
 
 [dev-dependencies]
 krark = { path = "deps/krark" }
