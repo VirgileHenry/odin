@@ -5,7 +5,7 @@ pub enum Layout {
     Split {},
     Flip {},
     Transform {},
-    ModelDfc {},
+    ModalDfc {},
     Meld {},
     Leveler {},
     Class {},

@@ -1,14 +1,10 @@
-mod layout;
+mod game;
 mod legalities;
+mod printed;
 
-type CardName = arrayvec::ArrayString<64>;
+pub use game::Card;
+pub use printed::PrintedCard;
 
-pub struct ScryfallCard {
-    /* === General features === */
-    pub scryfall_id: uuid::Uuid,
-    pub name: CardName,
-    pub legalities: legalities::Legalities,
-    /* === Gameplay related features === */
-    pub color_identity: arrayvec::ArrayVec<mtg_data::Color, 5>,
-    pub layout: layout::Layout,
-}
+pub type CardName = arrayvec::ArrayString<128>;
+pub type ColorIdentity = arrayvec::ArrayVec<mtg_data::Color, 5>;
+pub type ManaCost = arrayvec::ArrayVec<mtg_data::Mana, 16>;
