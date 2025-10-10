@@ -45,7 +45,7 @@ fn remove_parens<I: Iterator<Item = char>>(chars: &mut I) {
 }
 
 /// Create a vec of Terminals from a string. Can fail, and will return an error if it does.
-pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::LexerError<'src>> {
+pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::LexerError> {
     /* List of non words token we also want to match */
     const MATCHABLE_NON_WORDS: &[&'static str] =
         &["\\.", ",", "'", "{", "}", "~", "\\/", ":", "+", "\\-"];
@@ -83,11 +83,8 @@ pub fn lex<'src>(input: &'src str) -> Result<Vec<tokens::Token<'src>>, error::Le
     } else {
         let start = raw_tokens[0].start();
         let end = raw_tokens[raw_tokens.len() - 1].end();
-        let span = span::Span {
-            start,
-            length: end - start,
-            text: &input[start..end],
-        };
-        Err(error::LexerError::NoTokenMatch { span })
+        Err(error::LexerError::NoTokenMatch(
+            input[start..end].to_string(),
+        ))
     }
 }

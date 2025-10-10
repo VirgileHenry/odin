@@ -56,7 +56,7 @@ pub fn example() -> AbilityTree {
                 },
                 effect: statement::Statement::Imperative(imperative::Imperative::Put {
                     amount: terminals::Number::Number(1),
-                    of: terminals::Counter::PlusOne,
+                    of: terminals::Counter::PlusOnePlusOne,
                     on: object::ObjectReference::SpecifiedObj {
                         amount: terminals::CountSpecifier::All,
                         object: object::Object::Creature,

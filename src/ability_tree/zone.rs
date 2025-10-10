@@ -1,18 +1,20 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Zone {
-    Graveyard,
-    Library,
-    Hand,
+    Battlefield,
     Exile,
+    Graveyard,
+    Hand,
+    Library,
 }
 
 impl std::fmt::Display for Zone {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Zone::Graveyard => write!(f, "Graveyard"),
-            Zone::Library => write!(f, "Library"),
-            Zone::Hand => write!(f, "Hand"),
-            Zone::Exile => write!(f, "Exile"),
+            Zone::Battlefield => write!(f, "battlefield"),
+            Zone::Exile => write!(f, "exile"),
+            Zone::Graveyard => write!(f, "graveyard"),
+            Zone::Hand => write!(f, "hand"),
+            Zone::Library => write!(f, "library"),
         }
     }
 }
@@ -20,10 +22,11 @@ impl std::fmt::Display for Zone {
 impl crate::ability_tree::terminals::Terminal for Zone {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "graveyard" => Some(Zone::Graveyard),
-            "library" => Some(Zone::Library),
-            "hand" => Some(Zone::Hand),
+            "battlefield" => Some(Zone::Battlefield),
             "exile" => Some(Zone::Exile),
+            "graveyard" => Some(Zone::Graveyard),
+            "hand" => Some(Zone::Hand),
+            "library" => Some(Zone::Library),
             _ => None,
         }
     }

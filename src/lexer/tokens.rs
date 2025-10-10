@@ -29,14 +29,19 @@ impl<'src> Token<'src> {
             &gen_parse_func(terminals::Counter::try_from_str),
             &gen_parse_func(terminals::CountSpecifier::try_from_str),
             &gen_parse_func(terminals::ControlSpecifier::try_from_str),
+            &gen_parse_func(terminals::OwnerSpecifier::try_from_str),
+            &gen_parse_func(terminals::Order::try_from_str),
             &gen_parse_func(terminals::Appartenance::try_from_str),
             &gen_parse_func(terminals::CardActions::try_from_str),
-            &gen_parse_func(terminals::PlayerActions::try_from_str),
             &gen_parse_func(terminals::PlayerSpecifier::try_from_str),
+            &gen_parse_func(terminals::PermanentState::try_from_str),
             &gen_parse_func(terminals::PermanentProperty::try_from_str),
             &gen_parse_func(terminals::SpellProperty::try_from_str),
+            &gen_parse_func(terminals::Phase::try_from_str),
+            &gen_parse_func(terminals::Step::try_from_str),
             &gen_parse_func(terminals::PowerToughness::try_from_str),
             &gen_parse_func(terminals::PowerToughnessModifier::try_from_str),
+            &gen_parse_func(terminals::PlaneswalkerAbilityCost::try_from_str),
             &gen_parse_func(object::Object::try_from_str),
             &gen_parse_func(zone::Zone::try_from_str),
             &gen_parse_func(mtg_data::Color::try_from_str),
@@ -56,7 +61,11 @@ impl<'src> Token<'src> {
             &gen_parse_func(non_terminals::TapUntapCost::try_from_str),
             &gen_parse_func(non_terminals::EnglishKeywords::try_from_str),
             &gen_parse_func(non_terminals::SelfReferencing::try_from_str),
+            &gen_parse_func(non_terminals::NumberReference::try_from_str),
+            &gen_parse_func(non_terminals::NotOfAKind::try_from_str),
             &gen_parse_func(non_terminals::ActionKeywords::try_from_str),
+            &gen_parse_func(non_terminals::DamageKind::try_from_str),
+            &gen_parse_func(non_terminals::PlayerActions::try_from_str),
             &gen_parse_func(non_terminals::VhyToSortLater::try_from_str),
         ];
 
@@ -75,14 +84,19 @@ pub enum TokenKind {
     Counter(terminals::Counter),
     CountSpecifier(terminals::CountSpecifier),
     ControlSpecifier(terminals::ControlSpecifier),
+    OwnerSpecifier(terminals::OwnerSpecifier),
+    Order(terminals::Order),
     Appartenance(terminals::Appartenance),
     CardActions(terminals::CardActions),
-    PlayerActions(terminals::PlayerActions),
     PlayerSpecifier(terminals::PlayerSpecifier),
+    PermanentState(terminals::PermanentState),
     PermanentProperty(terminals::PermanentProperty),
+    Phase(terminals::Phase),
+    Step(terminals::Step),
     SpellProperty(terminals::SpellProperty),
     PowerToughness(terminals::PowerToughness),
     PowerToughnessModifier(terminals::PowerToughnessModifier),
+    PlaneswalkerAbilityCost(terminals::PlaneswalkerAbilityCost),
     Object(object::Object),
     Zone(zone::Zone),
     Color(mtg_data::Color),
@@ -102,7 +116,11 @@ pub enum TokenKind {
     TapUntapCost(non_terminals::TapUntapCost),
     EnglishKeywords(non_terminals::EnglishKeywords),
     SelfReferencing(non_terminals::SelfReferencing),
+    NumberReference(non_terminals::NumberReference),
+    NotOfAKind(non_terminals::NotOfAKind),
     ActionKeywords(non_terminals::ActionKeywords),
+    DamageKind(non_terminals::DamageKind),
+    PlayerActions(non_terminals::PlayerActions),
     VhyToSortLater(non_terminals::VhyToSortLater),
 }
 
@@ -120,14 +138,19 @@ impl_into_token_kind!(terminals::Number, Number);
 impl_into_token_kind!(terminals::Counter, Counter);
 impl_into_token_kind!(terminals::CountSpecifier, CountSpecifier);
 impl_into_token_kind!(terminals::ControlSpecifier, ControlSpecifier);
+impl_into_token_kind!(terminals::OwnerSpecifier, OwnerSpecifier);
+impl_into_token_kind!(terminals::Order, Order);
 impl_into_token_kind!(terminals::Appartenance, Appartenance);
 impl_into_token_kind!(terminals::CardActions, CardActions);
-impl_into_token_kind!(terminals::PlayerActions, PlayerActions);
 impl_into_token_kind!(terminals::PlayerSpecifier, PlayerSpecifier);
+impl_into_token_kind!(terminals::PermanentState, PermanentState);
 impl_into_token_kind!(terminals::PermanentProperty, PermanentProperty);
 impl_into_token_kind!(terminals::SpellProperty, SpellProperty);
+impl_into_token_kind!(terminals::Phase, Phase);
+impl_into_token_kind!(terminals::Step, Step);
 impl_into_token_kind!(terminals::PowerToughness, PowerToughness);
 impl_into_token_kind!(terminals::PowerToughnessModifier, PowerToughnessModifier);
+impl_into_token_kind!(terminals::PlaneswalkerAbilityCost, PlaneswalkerAbilityCost);
 impl_into_token_kind!(object::Object, Object);
 impl_into_token_kind!(zone::Zone, Zone);
 impl_into_token_kind!(mtg_data::Color, Color);
@@ -147,5 +170,9 @@ impl_into_token_kind!(non_terminals::TriggerAbilityMarker, TriggerAbilityMarker)
 impl_into_token_kind!(non_terminals::TapUntapCost, TapUntapCost);
 impl_into_token_kind!(non_terminals::EnglishKeywords, EnglishKeywords);
 impl_into_token_kind!(non_terminals::SelfReferencing, SelfReferencing);
+impl_into_token_kind!(non_terminals::NumberReference, NumberReference);
+impl_into_token_kind!(non_terminals::NotOfAKind, NotOfAKind);
 impl_into_token_kind!(non_terminals::ActionKeywords, ActionKeywords);
+impl_into_token_kind!(non_terminals::DamageKind, DamageKind);
+impl_into_token_kind!(non_terminals::PlayerActions, PlayerActions);
 impl_into_token_kind!(non_terminals::VhyToSortLater, VhyToSortLater);

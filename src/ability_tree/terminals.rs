@@ -1,4 +1,7 @@
-use std::str::FromStr;
+mod counter;
+mod mtg_data;
+
+pub use counter::Counter;
 
 pub trait Terminal: std::fmt::Display + Sized {
     fn try_from_str(source: &str) -> Option<Self>;
@@ -6,8 +9,9 @@ pub trait Terminal: std::fmt::Display + Sized {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Number {
-    Number(i32),
+    Number(u32),
     X,
+    OrMore(u32),
 }
 
 impl std::fmt::Display for Number {
@@ -15,48 +19,25 @@ impl std::fmt::Display for Number {
         match self {
             Number::X => write!(f, "x"),
             Number::Number(num) => write!(f, "{num}"),
+            Number::OrMore(num) => write!(f, "{num} or more"),
         }
     }
 }
 
 impl Terminal for Number {
     fn try_from_str(source: &str) -> Option<Self> {
-        match source {
-            "x" => Some(Number::X),
-            "a" => Some(Number::Number(1)),
-            "an" => Some(Number::Number(1)),
-            "one" => Some(Number::Number(1)),
-            "two" => Some(Number::Number(2)),
-            "three" => Some(Number::Number(3)),
-            "four" => Some(Number::Number(4)),
-            "five" => Some(Number::Number(5)),
-            "six" => Some(Number::Number(6)),
-            other => {
-                let num = other.parse().ok()?;
-                Some(Number::Number(num))
-            }
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum Counter {
-    PlusOne,
-}
-
-impl std::fmt::Display for Counter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Counter::PlusOne => write!(f, "+1/+1 counter"),
-        }
-    }
-}
-
-impl Terminal for Counter {
-    fn try_from_str(source: &str) -> Option<Self> {
-        match source {
-            "+1/+1 counter" | "+1/+1 counters" => Some(Counter::PlusOne),
-            _ => None,
+        if let Some(num) = crate::utils::parse_num(source) {
+            Some(Number::Number(num))
+        } else if source == "x" {
+            Some(Number::X)
+        } else if let Some(stripped) = source.strip_suffix(" or more") {
+            let num = crate::utils::parse_num(stripped)?;
+            Some(Number::OrMore(num))
+        } else if let Some(stripped) = source.strip_suffix(" or greater") {
+            let num = crate::utils::parse_num(stripped)?;
+            Some(Number::OrMore(num))
+        } else {
+            None
         }
     }
 }
@@ -65,7 +46,8 @@ impl Terminal for Counter {
 pub enum CountSpecifier {
     All,
     Target,
-    UpTo(usize),
+    UpTo(u32),
+    AnyNumberOfTargets,
 }
 
 impl std::fmt::Display for CountSpecifier {
@@ -74,6 +56,7 @@ impl std::fmt::Display for CountSpecifier {
             CountSpecifier::All => write!(f, "all"),
             CountSpecifier::Target => write!(f, "target"),
             CountSpecifier::UpTo(amount) => write!(f, "up to {amount}"),
+            CountSpecifier::AnyNumberOfTargets => write!(f, "any number of target"),
         }
     }
 }
@@ -84,11 +67,12 @@ impl Terminal for CountSpecifier {
             "all" => Some(CountSpecifier::All),
             "each" => Some(CountSpecifier::All),
             "target" => Some(CountSpecifier::Target),
+            "any target" => Some(CountSpecifier::Target),
+            "any number of target" => Some(CountSpecifier::AnyNumberOfTargets),
             other => {
                 let prefix = "up to ";
                 if other.starts_with(prefix) {
-                    let decimal_part = &other[prefix.len()..];
-                    let num = decimal_part.parse().ok()?;
+                    let num = crate::utils::parse_num(&other[prefix.len()..])?;
                     Some(CountSpecifier::UpTo(num))
                 } else {
                     None
@@ -116,8 +100,63 @@ impl std::fmt::Display for ControlSpecifier {
 impl Terminal for ControlSpecifier {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "you control" => Some(ControlSpecifier::YouControl),
-            "you don't control" => Some(ControlSpecifier::YouDontControl),
+            "you control" | "you already control" => Some(ControlSpecifier::YouControl),
+            "you don't control" | "your opponents control" | "an opponent controls" => {
+                Some(ControlSpecifier::YouDontControl)
+            }
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum OwnerSpecifier {
+    YouOwn,
+    YouDontOwn,
+    ObjectOwner,
+}
+
+impl std::fmt::Display for OwnerSpecifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            OwnerSpecifier::YouOwn => write!(f, "you own"),
+            OwnerSpecifier::YouDontOwn => write!(f, "you don't own"),
+            OwnerSpecifier::ObjectOwner => write!(f, "it's owner"),
+        }
+    }
+}
+
+impl Terminal for OwnerSpecifier {
+    fn try_from_str(source: &str) -> Option<Self> {
+        match source {
+            "you own" => Some(OwnerSpecifier::YouOwn),
+            "you don't own" => Some(OwnerSpecifier::YouDontOwn),
+            "it's owner" => Some(OwnerSpecifier::ObjectOwner),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum Order {
+    RandomOrder,
+    ChosenOrder,
+}
+
+impl std::fmt::Display for Order {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Order::RandomOrder => write!(f, "a random order"),
+            Order::ChosenOrder => write!(f, "any order"),
+        }
+    }
+}
+
+impl Terminal for Order {
+    fn try_from_str(source: &str) -> Option<Self> {
+        match source {
+            "a random order" => Some(Order::RandomOrder),
+            "any order" => Some(Order::ChosenOrder),
             _ => None,
         }
     }
@@ -143,6 +182,7 @@ impl Terminal for Appartenance {
         match source {
             "your" => Some(Appartenance::Your),
             "an opponent" => Some(Appartenance::AnOpponent),
+            "their" => Some(Appartenance::AnOpponent),
             _ => None,
         }
     }
@@ -151,16 +191,20 @@ impl Terminal for Appartenance {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CardActions {
     Attacks,
-    Enters,
+    Blocks,
     Dies,
+    Enters,
+    Fight,
 }
 
 impl std::fmt::Display for CardActions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             CardActions::Attacks => write!(f, "attacks"),
+            CardActions::Blocks => write!(f, "blocks"),
             CardActions::Dies => write!(f, "dies"),
             CardActions::Enters => write!(f, "enters"),
+            CardActions::Fight => write!(f, "fights"),
         }
     }
 }
@@ -168,67 +212,11 @@ impl std::fmt::Display for CardActions {
 impl Terminal for CardActions {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "attacks" => Some(CardActions::Attacks),
-            "dies" => Some(CardActions::Dies),
-            "enters" => Some(CardActions::Enters),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum PlayerActions {
-    Add,
-    Attack,
-    Cast,
-    Choose,
-    Create,
-    Destroy,
-    Discard,
-    Draw,
-    Exile,
-    Pay,
-    Play,
-    Scry,
-    Search,
-}
-
-impl std::fmt::Display for PlayerActions {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            PlayerActions::Add => write!(f, "add"),
-            PlayerActions::Attack => write!(f, "attack"),
-            PlayerActions::Cast => write!(f, "cast"),
-            PlayerActions::Choose => write!(f, "choose"),
-            PlayerActions::Create => write!(f, "create"),
-            PlayerActions::Destroy => write!(f, "destroy"),
-            PlayerActions::Discard => write!(f, "discard"),
-            PlayerActions::Draw => write!(f, "draw"),
-            PlayerActions::Exile => write!(f, "exile"),
-            PlayerActions::Pay => write!(f, "pay"),
-            PlayerActions::Play => write!(f, "play"),
-            PlayerActions::Scry => write!(f, "scry"),
-            PlayerActions::Search => write!(f, "search"),
-        }
-    }
-}
-
-impl Terminal for PlayerActions {
-    fn try_from_str(source: &str) -> Option<Self> {
-        match source {
-            "add" | "adds" => Some(PlayerActions::Add),
-            "attack" | "attacks" => Some(PlayerActions::Attack),
-            "cast" | "casts" => Some(PlayerActions::Cast),
-            "choose" | "chooses" => Some(PlayerActions::Choose),
-            "create" | "creates" => Some(PlayerActions::Create),
-            "destroy" | "destroys" => Some(PlayerActions::Destroy),
-            "discard" | "discards" => Some(PlayerActions::Discard),
-            "draw" | "draws" => Some(PlayerActions::Draw),
-            "exile" | "exiles" => Some(PlayerActions::Exile),
-            "pay" | "pays" => Some(PlayerActions::Pay),
-            "play" | "plays" => Some(PlayerActions::Play),
-            "scry" | "scrys" => Some(PlayerActions::Scry),
-            "search" | "searchs" => Some(PlayerActions::Search),
+            "attack" | "attacks" => Some(CardActions::Attacks),
+            "block" | "blocks" => Some(CardActions::Attacks),
+            "die" | "dies" => Some(CardActions::Dies),
+            "enter" | "enters" => Some(CardActions::Enters),
+            "fight" | "fights" => Some(CardActions::Fight),
             _ => None,
         }
     }
@@ -258,8 +246,8 @@ impl std::fmt::Display for PlayerSpecifier {
 impl Terminal for PlayerSpecifier {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "an opponent" => Some(PlayerSpecifier::AnOpponent),
-            "a player" => Some(PlayerSpecifier::Any),
+            "an opponent" | "each opponent" => Some(PlayerSpecifier::AnOpponent),
+            "a player" | "each player" => Some(PlayerSpecifier::Any),
             "the player to your left" => Some(PlayerSpecifier::ToYourLeft),
             "the player to your right" => Some(PlayerSpecifier::ToYourRight),
             "you" => Some(PlayerSpecifier::You),
@@ -270,19 +258,17 @@ impl Terminal for PlayerSpecifier {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum PermanentProperty {
-    Blocking,
-    Attacking,
-    Tapped,
-    Untapped,
+    Power,
+    Tougness,
+    ConvertedManaCost,
 }
 
 impl std::fmt::Display for PermanentProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PermanentProperty::Blocking => write!(f, "blocking"),
-            PermanentProperty::Attacking => write!(f, "attacking"),
-            PermanentProperty::Tapped => write!(f, "tapped"),
-            PermanentProperty::Untapped => write!(f, "untapped"),
+            PermanentProperty::Power => write!(f, "power"),
+            PermanentProperty::Tougness => write!(f, "touhness"),
+            PermanentProperty::ConvertedManaCost => write!(f, "converted mana cost"),
         }
     }
 }
@@ -290,10 +276,46 @@ impl std::fmt::Display for PermanentProperty {
 impl Terminal for PermanentProperty {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
-            "blocking" => Some(PermanentProperty::Blocking),
-            "attacking" => Some(PermanentProperty::Attacking),
-            "tapped" => Some(PermanentProperty::Tapped),
-            "untapped" => Some(PermanentProperty::Untapped),
+            "power" => Some(PermanentProperty::Power),
+            "toughness" => Some(PermanentProperty::Tougness),
+            "mana cost" | "mana value" => Some(PermanentProperty::ConvertedManaCost),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum PermanentState {
+    Attacking,
+    Blocking,
+    Blocked,
+    Equipped,
+    Tapped,
+    Untapped,
+}
+
+impl std::fmt::Display for PermanentState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PermanentState::Attacking => write!(f, "attacking"),
+            PermanentState::Blocking => write!(f, "blocking"),
+            PermanentState::Blocked => write!(f, "blocked"),
+            PermanentState::Tapped => write!(f, "tapped"),
+            PermanentState::Untapped => write!(f, "untapped"),
+            PermanentState::Equipped => write!(f, "equipped"),
+        }
+    }
+}
+
+impl Terminal for PermanentState {
+    fn try_from_str(source: &str) -> Option<Self> {
+        match source {
+            "attacking" => Some(PermanentState::Attacking),
+            "blocking" => Some(PermanentState::Blocking),
+            "blocked" => Some(PermanentState::Blocked),
+            "tapped" => Some(PermanentState::Tapped),
+            "untapped" => Some(PermanentState::Untapped),
+            "equipped" => Some(PermanentState::Equipped),
             _ => None,
         }
     }
@@ -302,12 +324,14 @@ impl Terminal for PermanentProperty {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum SpellProperty {
     Countered,
+    Kicked,
 }
 
 impl std::fmt::Display for SpellProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SpellProperty::Countered => write!(f, "countered"),
+            SpellProperty::Kicked => write!(f, "kicked"),
         }
     }
 }
@@ -316,6 +340,97 @@ impl Terminal for SpellProperty {
     fn try_from_str(source: &str) -> Option<Self> {
         match source {
             "countered" => Some(SpellProperty::Countered),
+            "kicked" => Some(SpellProperty::Countered),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum Phase {
+    Beginning,
+    PrecombatMain,
+    Combat,
+    PostcombatMain,
+    End,
+}
+
+impl std::fmt::Display for Phase {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Phase::Beginning => write!(f, "beginning phase"),
+            Phase::PrecombatMain => write!(f, "precombat main phase"),
+            Phase::Combat => write!(f, "combat phase"),
+            Phase::PostcombatMain => write!(f, "postcombat main phase"),
+            Phase::End => write!(f, "end phase"),
+        }
+    }
+}
+
+impl Terminal for Phase {
+    fn try_from_str(source: &str) -> Option<Self> {
+        match source {
+            "beginning phase" => Some(Phase::Beginning),
+            "precombat main phase" => Some(Phase::PrecombatMain),
+            "combat phase" => Some(Phase::Combat),
+            "postcombat main phase" => Some(Phase::PostcombatMain),
+            "end phase" => Some(Phase::End),
+            "end of turn" => Some(Phase::End),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub enum Step {
+    Untap,
+    Upkeep,
+    Draw,
+    BeginningOfCombat,
+    DeclareAttackers,
+    DeclareBlockers,
+    FirstStrikeDamage,
+    Damage,
+    LastStrikeDamage,
+    EndOfCombat,
+    End,
+    Cleanup,
+}
+
+impl std::fmt::Display for Step {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Step::Untap => write!(f, "untap"),
+            Step::Upkeep => write!(f, "upkeep"),
+            Step::Draw => write!(f, "draw"),
+            Step::BeginningOfCombat => write!(f, "beginning of combat"),
+            Step::DeclareAttackers => write!(f, "declaration of attackers"),
+            Step::DeclareBlockers => write!(f, "declaration of blockers"),
+            Step::FirstStrikeDamage => write!(f, "first strike damage step"),
+            Step::Damage => write!(f, "damage step"),
+            Step::LastStrikeDamage => write!(f, "last strike damage step"),
+            Step::EndOfCombat => write!(f, "end of combat"),
+            Step::End => write!(f, "end step"),
+            Step::Cleanup => write!(f, "cleanup"),
+        }
+    }
+}
+
+impl Terminal for Step {
+    fn try_from_str(source: &str) -> Option<Self> {
+        match source {
+            "untap step" => Some(Step::Untap),
+            "upkeep" => Some(Step::Upkeep),
+            "draw step" => Some(Step::Draw),
+            "beginning of combat" => Some(Step::BeginningOfCombat),
+            "declaration of attackers" => Some(Step::DeclareAttackers),
+            "declaration of blockers" => Some(Step::DeclareBlockers),
+            "first strike damage step" => Some(Step::FirstStrikeDamage),
+            "damage step" => Some(Step::Damage),
+            "last strike damage step" => Some(Step::LastStrikeDamage),
+            "end of combat" => Some(Step::EndOfCombat),
+            "end step" => Some(Step::End),
+            "cleanup" => Some(Step::Cleanup),
             _ => None,
         }
     }
@@ -354,111 +469,76 @@ impl Terminal for PowerToughness {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct PowerToughnessModifier {
-    power: i32,
-    toughness: i32,
+pub enum PowerToughnessModifier {
+    Constant { power: i32, toughness: i32 },
+    PlusXPlusX,
+    PlusXMinusX,
+    MinusXPlusX,
 }
 
 impl std::fmt::Display for PowerToughnessModifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:+}/{:+}", self.power, self.toughness)
+        match self {
+            PowerToughnessModifier::Constant { power, toughness } => {
+                write!(f, "{:+}/{:+}", power, toughness)
+            }
+            PowerToughnessModifier::PlusXPlusX => write!(f, "+x/+x"),
+            PowerToughnessModifier::PlusXMinusX => write!(f, "+x/-x"),
+            PowerToughnessModifier::MinusXPlusX => write!(f, "-x/+x"),
+        }
     }
 }
 
 impl Terminal for PowerToughnessModifier {
     fn try_from_str(source: &str) -> Option<Self> {
-        let split: Vec<_> = source.split('/').collect();
-        let (raw_pow, raw_tough) = match split.as_slice() {
-            [pow, tough] => (pow, tough),
-            _ => return None,
-        };
-        if !raw_pow.starts_with(&['+', '-']) {
+        match source {
+            "+x/+x" => Some(PowerToughnessModifier::PlusXPlusX),
+            "+x/-x" => Some(PowerToughnessModifier::PlusXMinusX),
+            "-x/+x" => Some(PowerToughnessModifier::MinusXPlusX),
+            other => {
+                let split: Vec<_> = other.split('/').collect();
+                let (raw_pow, raw_tough) = match split.as_slice() {
+                    [pow, tough] => (pow, tough),
+                    _ => return None,
+                };
+                if !raw_pow.starts_with(&['+', '-']) {
+                    return None;
+                }
+                if !crate::utils::is_digits(&raw_pow[1..]) {
+                    return None;
+                }
+                if !raw_tough.starts_with(&['+', '-']) {
+                    return None;
+                }
+                if !crate::utils::is_digits(&raw_tough[1..]) {
+                    return None;
+                }
+                Some(PowerToughnessModifier::Constant {
+                    power: raw_pow.parse().ok()?,
+                    toughness: raw_tough.parse().ok()?,
+                })
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct PlaneswalkerAbilityCost(i32);
+
+impl std::fmt::Display for PlaneswalkerAbilityCost {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:+}", self.0)
+    }
+}
+
+impl Terminal for PlaneswalkerAbilityCost {
+    fn try_from_str(source: &str) -> Option<Self> {
+        if !source.starts_with(&['+', '-']) {
             return None;
         }
-        if !crate::utils::is_digits(&raw_pow[1..]) {
+        if !crate::utils::is_digits(&source[1..]) {
             return None;
         }
-        if !raw_tough.starts_with(&['+', '-']) {
-            return None;
-        }
-        if !crate::utils::is_digits(&raw_tough[1..]) {
-            return None;
-        }
-        Some(PowerToughnessModifier {
-            power: raw_pow.parse().ok()?,
-            toughness: raw_tough.parse().ok()?,
-        })
-    }
-}
-
-impl Terminal for mtg_data::KeywordAbility {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::KeywordAbility::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::Mana {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::Mana::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::CardType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::CardType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::CreatureType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::CreatureType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::EnchantmentType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::EnchantmentType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::LandType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::LandType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::PlaneswalkerType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::PlaneswalkerType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::BattleType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::BattleType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::ArtifactType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::ArtifactType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::SpellType {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::SpellType::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::Supertype {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::Supertype::from_str(source).ok()
-    }
-}
-
-impl Terminal for mtg_data::Color {
-    fn try_from_str(source: &str) -> Option<Self> {
-        mtg_data::Color::from_str(source).ok()
+        Some(PlaneswalkerAbilityCost(source.parse().ok()?))
     }
 }
